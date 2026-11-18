@@ -1,0 +1,23 @@
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Gradle
+.gradle/
+build/
+
+# IDE
+.idea/
+*.iml
+
+# Node
+node_modules/
+miniapp/node_modules/
+miniapp/dist/
+
+# OS
+.DS_Store
+
+# Logs
+*.log

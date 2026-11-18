@@ -1,0 +1,275 @@
+:root {
+  --app-bg: var(--tg-theme-bg-color, #f7f6f2);
+  --app-text: var(--tg-theme-text-color, #25251f);
+  --app-muted: var(--tg-theme-hint-color, #88877f);
+  --app-secondary: var(--tg-theme-secondary-bg-color, #ffffff);
+  --app-accent: #78845b;
+  --app-border: #e5e3db;
+  --app-danger: #b34d42;
+  --app-success: #52754a;
+}
+
+.app {
+  width: min(100%, 560px);
+  min-height: 100vh;
+  min-height: var(--tg-viewport-stable-height, 100dvh);
+  margin: 0 auto;
+  padding:
+    max(28px, env(safe-area-inset-top))
+    22px
+    max(32px, env(safe-area-inset-bottom));
+  color: var(--app-text);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 36px;
+}
+
+.logo {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 2px;
+}
+
+.month,
+.eyebrow {
+  color: var(--app-muted);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+}
+
+.intro {
+  margin-bottom: 34px;
+}
+
+.intro h1 {
+  margin: 12px 0;
+  font-family: Georgia, serif;
+  font-size: clamp(38px, 10vw, 52px);
+  font-weight: 400;
+  line-height: 1.05;
+  letter-spacing: -1.8px;
+}
+
+.intro p {
+  max-width: 100%;
+  color: var(--app-muted);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.input-section,
+.preview-section {
+  margin-bottom: 30px;
+}
+
+.section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.section-heading label {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.section-heading span {
+  color: var(--app-muted);
+  font-size: 12px;
+}
+
+textarea {
+  display: block;
+  width: 100%;
+  min-height: 190px;
+  resize: vertical;
+  padding: 17px;
+  border: 1px solid var(--app-border);
+  border-radius: 14px;
+  outline: none;
+  background: var(--app-secondary);
+  color: var(--app-text);
+  font-size: 16px;
+  line-height: 1.7;
+  transition: border-color 0.2s;
+}
+
+textarea:focus,
+.book-item input:focus {
+  border-color: var(--app-accent);
+}
+
+textarea::placeholder {
+  color: var(--app-muted);
+  opacity: 0.8;
+}
+
+.input-hint,
+.helper-message {
+  margin: 9px 2px 0;
+  color: var(--app-muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.count.complete {
+  color: var(--app-success);
+  font-weight: 700;
+}
+
+.progress-track {
+  height: 5px;
+  margin-bottom: 16px;
+  overflow: hidden;
+  border-radius: 10px;
+  background: var(--app-border);
+}
+
+.progress-value {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--app-accent);
+  transition: width 0.2s ease;
+}
+
+.empty-state {
+  padding: 28px 16px;
+  border: 1px dashed var(--app-border);
+  border-radius: 14px;
+  color: var(--app-muted);
+  text-align: center;
+  font-size: 13px;
+}
+
+.book-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.book-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 50px;
+  padding: 5px 10px;
+  border: 1px solid var(--app-border);
+  border-radius: 11px;
+  background: var(--app-secondary);
+}
+
+.book-number {
+  width: 20px;
+  color: var(--app-muted);
+  font-size: 12px;
+  text-align: center;
+}
+
+.book-item input {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--app-text);
+  font-size: 16px;
+}
+
+.book-status {
+  color: var(--app-success);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.error-message {
+  margin: 10px 2px 0;
+  color: var(--app-danger);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.success-message {
+  margin: 10px 2px 0;
+  color: var(--app-success);
+  font-size: 12px;
+}
+
+.submit-button {
+  width: 100%;
+  min-height: 54px;
+  border: 0;
+  border-radius: 14px;
+  background: #303329;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.submit-button:disabled {
+  background: #d7d6cf;
+  color: #929087;
+  cursor: not-allowed;
+}
+
+.add-book-button {
+  width: 100%;
+  min-height: 46px;
+  margin-top: 12px;
+  padding: 13px;
+  border: 1px dashed #c9c7bc;
+  border-radius: 11px;
+  background: transparent;
+  color: #62684e;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.remove-book {
+  min-width: 36px;
+  min-height: 36px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--app-muted);
+  font-size: 22px;
+  cursor: pointer;
+}
+
+.remove-book:hover {
+  color: var(--app-danger);
+}
+
+.duplicate-indicator {
+  color: var(--app-danger);
+  font-weight: 700;
+}
+
+footer {
+  padding-top: 28px;
+  color: var(--app-muted);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-align: center;
+}
+
+@media (max-width: 380px) {
+  .app {
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+
+  .header {
+    padding-bottom: 28px;
+  }
+}

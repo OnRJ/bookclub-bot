@@ -1,0 +1,31 @@
+spring:
+  application:
+    name: bookclub-bot
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:bookclub}
+    username: ${DB_USER:}
+    password: ${DB_PASSWORD:}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+server:
+  port: ${SERVER_PORT:8080}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+app:
+  submission:
+    current-month-cutoff-day: ${SUBMISSION_CUTOFF_DAY:10}
+  frontend:
+    url: https://flash-engaging-membrane-today.trycloudflare.com
+
+telegram:
+  bot:
+    token: ${TELEGRAM_BOT_TOKEN}
+    username: book_worm_club_bot
