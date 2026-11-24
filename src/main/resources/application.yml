@@ -23,7 +23,7 @@ app:
   submission:
     current-month-cutoff-day: ${SUBMISSION_CUTOFF_DAY:10}
   frontend:
-    url: https://flash-engaging-membrane-today.trycloudflare.com
+    url: ${FRONTEND_URL:https://bookclub-bot.duckdns.org}
 
 telegram:
   bot:

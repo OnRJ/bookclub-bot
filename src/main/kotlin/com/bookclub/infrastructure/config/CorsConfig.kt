@@ -1,4 +1,3 @@
-
 package com.bookclub.infrastructure.config
 
 import org.springframework.beans.factory.annotation.Value
@@ -8,7 +7,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 
 @Configuration
 class CorsConfig(
-    @Value("\${app.frontend.url:http://localhost:5173}")
+    @param:Value("\${app.frontend.url:http://localhost:5173}")
     private val frontendUrl: String
 ) : WebMvcConfigurer {
 
