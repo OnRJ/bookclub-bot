@@ -1,19 +1,22 @@
-FROM node:22-alpine AS build
+FROM eclipse-temurin:25-jdk AS build
 
-WORKDIR /app
-
-COPY package*.json ./
-RUN npm ci
+WORKDIR /workspace
 
 COPY . .
 
-ARG VITE_API_BASE_URL=""
-ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
+RUN chmod +x gradlew
+RUN ./gradlew bootJar --no-daemon
 
-RUN npm run build
+FROM eclipse-temurin:25-jre
 
-FROM nginx:alpine
+WORKDIR /app
 
-COPY --from=build /app/dist /usr/share/nginx/html
+RUN useradd --system --uid 10001 appuser
 
-EXPOSE 80
+COPY --from=build /workspace/build/libs/*.jar app.jar
+
+USER appuser
+
+EXPOSE 8080
+
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]
