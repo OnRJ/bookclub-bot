@@ -15,7 +15,7 @@ class TelegramMembershipUpdateHandler(
     private val clubs: ClubRegistrationService,
     private val members: ClubMemberRegistrationService,
     private val telegramBot: TelegramBot,
-    @param:Value("\${telegram.bot.username}") private val botUsername: String
+    @param:Value($$"${telegram.bot.username}") private val botUsername: String
 ) {
     fun handle(update: Update): Boolean {
         val change = update.myChatMember() ?: return false
