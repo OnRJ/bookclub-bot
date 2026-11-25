@@ -12,6 +12,7 @@ services:
       SERVER_PORT: 8080
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost}
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      GOOGLE_BOOKS_API_KEY: ${GOOGLE_BOOKS_API_KEY}
     networks:
       - bookclub-network
 
