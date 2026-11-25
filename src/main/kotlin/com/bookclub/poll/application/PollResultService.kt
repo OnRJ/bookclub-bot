@@ -6,13 +6,14 @@ import com.bookclub.poll.infrastructure.persistence.PollRoundRepository
 import com.bookclub.poll.infrastructure.persistence.PollVoteRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.time.Instant
+import java.time.Clock
 
 @Service
 class PollResultService(
     private val pollRounds: PollRoundRepository,
     private val pollRoundOptions: PollRoundOptionRepository,
-    private val votes: PollVoteRepository
+    private val votes: PollVoteRepository,
+    private val clock: Clock = Clock.systemUTC()
 ) {
 
     @Transactional
@@ -20,7 +21,7 @@ class PollResultService(
         val pollRound = pollRounds.findByIdForUpdate(pollRoundId)
             ?: throw IllegalArgumentException("Poll round not found")
 
-        check(pollRound.status == "CLOSING") {
+        check(PollRoundStatus.fromPersisted(pollRound.status) == PollRoundStatus.CLOSING) {
             "Poll round is not closing"
         }
 
@@ -42,15 +43,15 @@ class PollResultService(
 
         val maxVotes = results.maxOfOrNull { it.votes } ?: 0L
 
-        pollRound.closedAt = Instant.now()
+        pollRound.closedAt = clock.instant()
 
         if (maxVotes == 0L) {
-            pollRound.status = "ADMIN_DECISION"
+            pollRound.status = PollRoundStatus.ADMIN_DECISION.name
 
             return PollResult(
                 pollRoundId = roundId,
                 roundNumber = pollRound.roundNumber,
-                status = "ADMIN_DECISION",
+                status = PollRoundStatus.ADMIN_DECISION,
                 winners = emptyList()
             )
         }
@@ -60,7 +61,7 @@ class PollResultService(
         val status = if (winners.size == 1) {
             val winner = winners.first()
 
-            pollRound.status = "WON"
+            pollRound.status = PollRoundStatus.WON.name
 
             val submission = pollRound.submission
 
@@ -72,18 +73,18 @@ class PollResultService(
                 "Winning book not found"
             )
 
-            submission.winnerSelectedAt = Instant.now()
+            submission.winnerSelectedAt = clock.instant()
             submission.status = "COMPLETED"
 
-            "WON"
+            PollRoundStatus.WON
         } else {
             if (pollRound.roundNumber == 1) {
-                pollRound.status = "TIE"
+                pollRound.status = PollRoundStatus.TIE.name
             } else {
-                pollRound.status = "ADMIN_DECISION"
+                pollRound.status = PollRoundStatus.ADMIN_DECISION.name
             }
 
-            pollRound.status
+            PollRoundStatus.fromPersisted(pollRound.status)
         }
 
         return PollResult(

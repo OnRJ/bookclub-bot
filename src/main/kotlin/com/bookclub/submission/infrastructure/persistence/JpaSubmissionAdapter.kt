@@ -12,7 +12,6 @@ import com.bookclub.user.infrastructure.persistence.UserRepository
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 import java.time.YearMonth
-import java.time.ZoneId
 
 @Component
 class JpaSubmissionAdapter(
@@ -22,14 +21,7 @@ class JpaSubmissionAdapter(
     private val submissions: SubmissionRepository,
     private val submissionBooks: SubmissionBookRepository,
     private val clubMembers: ClubMemberRepository
-) : SubmissionWriter, ClubLookup {
-
-    override fun findTimezoneByTelegramChatId(
-        telegramChatId: Long
-    ): ZoneId? {
-        val club = clubs.findByTelegramChatId(telegramChatId)
-        return club?.timezone?.let(ZoneId::of)
-    }
+) : SubmissionWriter {
 
     @Transactional
     override fun create(

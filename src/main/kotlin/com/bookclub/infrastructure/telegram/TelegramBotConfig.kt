@@ -5,10 +5,12 @@ import com.pengrad.telegrambot.TelegramBot
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.CommandLineRunner
 import org.springframework.context.annotation.Bean
+import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Configuration
 
 @Configuration
 class TelegramBotConfig {
+    private val log = LoggerFactory.getLogger(javaClass)
 
     @Bean
     fun telegramBot(
@@ -25,13 +27,9 @@ class TelegramBotConfig {
             val response = telegramBotService.getBotInfo()
 
             if (response.isOk) {
-                println(
-                    "Telegram connected! Bot: ${response.user().firstName()}"
-                )
+                log.info("Telegram connected. Bot: {}", response.user().firstName())
             } else {
-                println(
-                    "Telegram error: ${response.description()}"
-                )
+                log.error("Telegram connection failed: {}", response.description())
             }
         }
     }
@@ -43,7 +41,7 @@ class TelegramBotConfig {
     ): CommandLineRunner {
         return CommandLineRunner {
             telegramBot.setUpdatesListener(telegramUpdateHandler)
-            println("Telegram update listener started!")
+            log.info("Telegram update listener started")
         }
     }
 }

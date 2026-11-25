@@ -5,12 +5,14 @@ import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 import java.time.Instant
 import java.time.Duration
+import org.slf4j.LoggerFactory
 
 @Component
 class PollDeadlineScheduler(
     private val pollRounds: PollRoundRepository,
     private val pollClosingService: PollClosingService
 ) {
+    private val log = LoggerFactory.getLogger(javaClass)
 
     @Scheduled(fixedDelay = 60_000)
     fun closeExpiredPolls() {
@@ -26,9 +28,7 @@ class PollDeadlineScheduler(
             try {
                 pollClosingService.closePoll(roundId)
             } catch (exception: Exception) {
-                println(
-                    "Failed to close poll round $roundId: ${exception.message}"
-                )
+                log.error("Failed to close poll round {}: {}", roundId, exception.message, exception)
             }
         }
     }
@@ -44,10 +44,7 @@ class PollDeadlineScheduler(
             )
 
         stuckRounds.forEach { round ->
-            println(
-                "WARNING: Poll round ${round.id} has been in CLOSING " +
-                        "since ${round.closingStartedAt}. Manual recovery required."
-            )
+            log.warn("Poll round {} has been in CLOSING since {}. Manual recovery required.", round.id, round.closingStartedAt)
         }
     }
 }

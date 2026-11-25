@@ -7,23 +7,27 @@ import com.pengrad.telegrambot.request.GetMe
 import com.pengrad.telegrambot.request.SendMessage
 import com.pengrad.telegrambot.request.SendPoll
 import com.pengrad.telegrambot.request.StopPoll
+import com.bookclub.poll.application.TelegramGateway
+import com.bookclub.poll.application.TelegramPollPublication
 import org.springframework.stereotype.Service
 
 @Service
 class TelegramBotService(
     private val telegramBot: TelegramBot
-) {
+) : TelegramGateway {
 
     fun getBotInfo() = telegramBot.execute(GetMe())
 
-    fun sendMessage(chatId: Long, text: String) =
+    override fun sendMessage(chatId: Long, text: String) {
         telegramBot.execute(SendMessage(chatId, text))
+    }
 
-    fun sendPoll(
+    override fun sendPoll(
         chatId: Long,
         question: String,
         options: List<String>
-    ) = telegramBot.execute(
+    ): TelegramPollPublication {
+        val response = telegramBot.execute(
         SendPoll(
             chatId,
             question,
@@ -31,15 +35,22 @@ class TelegramBotService(
         )
             .isAnonymous(false)
             .allowsMultipleAnswers(true)
-    )
-
-    fun stopPoll(chatId: Long, messageId: Long) =
-        telegramBot.execute(
-            StopPoll(chatId, messageId.toInt())
         )
+        return TelegramPollPublication(
+            response.isOk,
+            response.description(),
+            response.message()?.poll()?.id(),
+            response.message()?.messageId()?.toLong()
+        )
+    }
 
-    fun sendMessageChecked(chatId: Long, text: String) {
-        val response = sendMessage(chatId, text)
+    override fun stopPoll(chatId: Long, messageId: Long): TelegramPollPublication {
+        val response = telegramBot.execute(StopPoll(chatId, messageId.toInt()))
+        return TelegramPollPublication(response.isOk, response.description())
+    }
+
+    override fun sendMessageChecked(chatId: Long, text: String) {
+        val response = telegramBot.execute(SendMessage(chatId, text))
 
         check(response.isOk) {
             "Telegram sendMessage failed: ${response.description()}"

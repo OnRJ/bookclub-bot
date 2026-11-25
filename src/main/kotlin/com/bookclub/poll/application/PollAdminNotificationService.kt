@@ -1,23 +1,22 @@
 package com.bookclub.poll.application
 
 import com.bookclub.club.infrastructure.persistence.ClubMemberRepository
-import com.bookclub.infrastructure.telegram.TelegramBotService
 import org.springframework.stereotype.Service
+import org.slf4j.LoggerFactory
 
 @Service
 class PollAdminNotificationService(
     private val clubMembers: ClubMemberRepository,
-    private val telegramBotService: TelegramBotService
+    private val telegramGateway: TelegramGateway
 ) {
+    private val log = LoggerFactory.getLogger(javaClass)
 
     fun notifyAdmins(chatId: Long, message: String) {
         // Сначала уведомляем группу.
         try {
-            telegramBotService.sendMessageChecked(chatId, message)
+            telegramGateway.sendMessageChecked(chatId, message)
         } catch (exception: Exception) {
-            println(
-                "Failed to notify group $chatId: ${exception.message}"
-            )
+            log.warn("Failed to notify group {}: {}", chatId, exception.message, exception)
         }
 
         val admins = clubMembers.findAllByClubTelegramChatIdAndRoleWithUser(
@@ -26,7 +25,7 @@ class PollAdminNotificationService(
         )
 
         if (admins.isEmpty()) {
-            println("No admins found for club $chatId")
+            log.info("No admins found for club {}", chatId)
             return
         }
 
@@ -36,15 +35,12 @@ class PollAdminNotificationService(
             val adminTelegramId = admin.user.telegramUserId
 
             try {
-                telegramBotService.sendMessageChecked(
+                    telegramGateway.sendMessageChecked(
                     adminTelegramId,
                     message
                 )
             } catch (exception: Exception) {
-                println(
-                    "Failed to notify admin $adminTelegramId: " +
-                            exception.message
-                )
+                log.warn("Failed to notify admin {}: {}", adminTelegramId, exception.message, exception)
             }
         }
     }

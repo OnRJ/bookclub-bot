@@ -14,8 +14,5 @@ class ClubEntity(
     var telegramChatId: Long = 0,
 
     @Column(nullable = false)
-    var name: String = "",
-
-    @Column(nullable = false)
-    var timezone: String = "Europe/London"
+    var name: String = ""
 )

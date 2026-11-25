@@ -6,6 +6,7 @@ plugins {
     kotlin("plugin.spring") version "2.3.21"
     kotlin("plugin.jpa") version "2.3.21"
     kotlin("plugin.allopen") version "2.3.21"
+    jacoco
 }
 group = "com.bookclub"
 version = "0.1.0"
@@ -36,3 +37,16 @@ allOpen {
 }
 kotlin { compilerOptions { freeCompilerArgs.addAll("-Xjsr305=strict") } }
 tasks.withType<Test> { useJUnitPlatform() }
+
+tasks.test {
+    finalizedBy(tasks.jacocoTestReport)
+}
+
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test)
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+    }
+}

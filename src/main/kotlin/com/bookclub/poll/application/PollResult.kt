@@ -10,6 +10,6 @@ data class PollOptionResult(
 data class PollResult(
     val pollRoundId: Long,
     val roundNumber: Int,
-    val status: String,
+    val status: PollRoundStatus,
     val winners: List<PollOptionResult>
 )

@@ -6,6 +6,7 @@ import com.bookclub.submission.infrastructure.persistence.SubmissionBookReposito
 import com.bookclub.submission.infrastructure.persistence.SubmissionRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.Clock
 import java.time.Duration
 import java.time.Instant
 
@@ -16,7 +17,8 @@ class PollRoundService(
     private val clubMembers: ClubMemberRepository,
     private val pollRounds: PollRoundRepository,
     private val pollRoundOptions: PollRoundOptionRepository,
-    private val eligibleVoters: PollEligibleVoterRepository
+    private val eligibleVoters: PollEligibleVoterRepository,
+    private val clock: Clock = Clock.systemUTC()
 ) {
 
     @Transactional
@@ -65,8 +67,8 @@ class PollRoundService(
                 submission = submission,
                 telegramChatId = command.telegramChatId,
                 roundNumber = 1,
-                status = "ACTIVE",
-                closesAt = Instant.now().plus(Duration.ofDays(3))
+                status = PollRoundStatus.ACTIVE.name,
+                closesAt = clock.instant().plus(Duration.ofDays(3))
             )
         )
 
@@ -132,7 +134,7 @@ class PollRoundService(
         val previousRound = pollRounds.findById(previousPollRoundId)
             .orElseThrow { IllegalArgumentException("Previous poll round not found") }
 
-        check(previousRound.status == "TIE") {
+        check(PollRoundStatus.fromPersisted(previousRound.status) == PollRoundStatus.TIE) {
             "Previous poll round is not tied"
         }
 
@@ -163,8 +165,8 @@ class PollRoundService(
                 submission = previousRound.submission,
                 telegramChatId = previousRound.telegramChatId,
                 roundNumber = 2,
-                status = "ACTIVE",
-                closesAt = Instant.now().plus(Duration.ofDays(3))
+                status = PollRoundStatus.ACTIVE.name,
+                closesAt = clock.instant().plus(Duration.ofDays(3))
             )
         )
 
@@ -207,10 +209,10 @@ class PollRoundService(
             IllegalArgumentException("Poll round not found")
         }
 
-        check(round.status == "ACTIVE") {
+        check(PollRoundStatus.fromPersisted(round.status) == PollRoundStatus.ACTIVE) {
             "Poll round is not active"
         }
 
-        round.status = "ADMIN_DECISION"
+        round.status = PollRoundStatus.ADMIN_DECISION.name
     }
 }

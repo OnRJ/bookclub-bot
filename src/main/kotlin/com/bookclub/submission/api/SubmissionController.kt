@@ -10,6 +10,7 @@ import com.bookclub.submission.application.SubmitBooksUseCase
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import com.bookclub.shared.application.ValidationException
 
 @RestController
 @RequestMapping("/api/submissions")
@@ -29,29 +30,23 @@ class SubmissionController(
         val telegramData = validator.validate(request.initData)
 
         val startParam = telegramData.startParam
-            ?: throw IllegalArgumentException("Missing club parameter")
+            ?: throw ValidationException("Missing club parameter")
 
         val telegramChatId = startParam
             .removePrefix("club_")
             .toLongOrNull()
-            ?: throw IllegalArgumentException("Invalid club parameter")
+            ?: throw ValidationException("Invalid club parameter")
 
-        require(startParam.startsWith("club_")) {
-            "Invalid club parameter"
-        }
+        if (!startParam.startsWith("club_")) throw ValidationException("Invalid club parameter")
 
-        require(telegramChatId < 0) {
-            "Invalid Telegram group ID"
-        }
+        if (telegramChatId >= 0) throw ValidationException("Invalid Telegram group ID")
 
         val isMember = membershipValidator.isMember(
             telegramChatId = telegramChatId,
             telegramUserId = telegramData.telegramUserId
         )
 
-        require(isMember) {
-            "You must be a member of this club to submit books"
-        }
+        if (!isMember) throw ValidationException("You must be a member of this club to submit books")
 
         val result = submitBooksUseCase.execute(
             SubmitBooksCommand(

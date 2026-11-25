@@ -4,6 +4,7 @@ package com.bookclub.poll.application
 import com.bookclub.poll.infrastructure.persistence.*
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import org.slf4j.LoggerFactory
 
 @Service
 class PollAnswerService(
@@ -15,6 +16,7 @@ class PollAnswerService(
     private val pollCompletionService: PollCompletionService,
     private val pollClosingService: PollClosingService
 ) {
+    private val log = LoggerFactory.getLogger(javaClass)
 
     fun saveAnswerAndCheckCompletion(
         telegramPollId: String,
@@ -24,11 +26,8 @@ class PollAnswerService(
         val round = pollRounds.findByTelegramPollId(telegramPollId)
             ?: return
 
-        if (round.status != "ACTIVE") {
-            println(
-                "Ignoring answer for inactive poll: $telegramPollId, " +
-                        "status=${round.status}"
-            )
+        if (PollRoundStatus.fromPersisted(round.status) != PollRoundStatus.ACTIVE) {
+            log.info("Ignoring answer for inactive poll {} with status {}", telegramPollId, round.status)
             return
         }
 
@@ -58,7 +57,7 @@ class PollAnswerService(
 
         val pollRoundId = requireNotNull(pollRound.id)
 
-        check(pollRound.status == "ACTIVE") {
+        check(PollRoundStatus.fromPersisted(pollRound.status) == PollRoundStatus.ACTIVE) {
             "Poll round is not active"
         }
 
@@ -69,7 +68,7 @@ class PollAnswerService(
             )
 
         if (!isEligible) {
-            println("User $telegramUserId is not eligible to vote")
+            log.info("User {} is not eligible to vote in poll {}", telegramUserId, telegramPollId)
             return
         }
 
