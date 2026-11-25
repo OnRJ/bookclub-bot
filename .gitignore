@@ -21,3 +21,4 @@ miniapp/dist/
 
 # Logs
 *.log
+miniapp/coverage/
