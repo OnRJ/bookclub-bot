@@ -11,9 +11,15 @@ class GoogleBooksService {
 
     private val logger = LoggerFactory.getLogger(GoogleBooksService::class.java)
     private val restTemplate = RestTemplate()
+    private val apiKey = System.getenv("GOOGLE_BOOKS_API_KEY")
 
     fun search(title: String, author: String? = null): BookInfo? {
         return try {
+            if (apiKey.isNullOrBlank()) {
+                logger.warn("Google Books API key is not configured")
+                return null
+            }
+
             val query = if (author.isNullOrBlank()) {
                 "intitle:$title"
             } else {
@@ -25,11 +31,12 @@ class GoogleBooksService {
                 .queryParam("q", query)
                 .queryParam("maxResults", 5)
                 .queryParam("langRestrict", "ru")
+                .queryParam("key", apiKey)
                 .build()
                 .encode()
                 .toUri()
 
-            logger.info("Google Books request: {}", uri)
+            logger.info("Google Books request for: {}", title)
 
             val response = restTemplate.getForObject(uri, JsonNode::class.java)
                 ?: return null
