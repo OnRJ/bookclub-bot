@@ -15,7 +15,7 @@ class TelegramBotConfig {
 
     @Bean
     fun telegramBot(
-        @Value("\${telegram.bot.token:}") token: String
+        @Value($$"${telegram.bot.token:}") token: String
     ): TelegramBot {
         return TelegramBot(token)
     }

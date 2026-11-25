@@ -29,7 +29,14 @@ class TelegramMembershipUpdateHandler(
             )
         }
         message.newChatMembers()?.forEach { member ->
-            members.registerMember(message.chat().id(), member.id(), member.username(), member.firstName() ?: "Unknown")
+            if (member.isBot) return@forEach
+
+            members.registerMember(
+                message.chat().id(),
+                member.id(),
+                member.username(),
+                member.firstName() ?: "Unknown"
+            )
         }
     }
 
