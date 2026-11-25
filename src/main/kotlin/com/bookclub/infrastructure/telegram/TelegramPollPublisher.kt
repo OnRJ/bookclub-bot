@@ -1,10 +1,15 @@
+
 package com.bookclub.infrastructure.telegram
 
 import com.bookclub.poll.application.PollRoundResult
 import com.bookclub.poll.application.PollRoundService
+import com.bookclub.infrastructure.bookinfo.GoogleBooksService
+import com.bookclub.infrastructure.bookinfo.BookInfoFormatter
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.request.InputPollOption
 import com.pengrad.telegrambot.request.SendPoll
+import com.pengrad.telegrambot.request.SendMessage
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.time.YearMonth
 import java.time.format.TextStyle
@@ -13,8 +18,11 @@ import java.util.Locale
 @Service
 class TelegramPollPublisher(
     private val telegramBot: TelegramBot,
-    private val pollRoundService: PollRoundService
+    private val pollRoundService: PollRoundService,
+    private val googleBooksService: GoogleBooksService,
+    private val bookInfoFormatter: BookInfoFormatter
 ) {
+    private val log = LoggerFactory.getLogger(javaClass)
 
     fun publishFirstRound(
         pollRound: PollRoundResult,
@@ -59,5 +67,25 @@ class TelegramPollPublisher(
             telegramPollId = telegramPollId,
             telegramMessageId = telegramMessageId.toLong()
         )
+
+        publishBookInfoSafely(pollRound)
+    }
+
+    private fun publishBookInfoSafely(pollRound: PollRoundResult) {
+        try {
+            val books = pollRound.bookTitles.mapNotNull { title ->
+                googleBooksService.search(title)
+            }
+
+            if (books.isEmpty()) return
+
+            val text = bookInfoFormatter.format(books)
+
+            telegramBot.execute(
+                SendMessage(pollRound.telegramChatId, text)
+            )
+        } catch (e: Exception) {
+            log.error("Failed to publish book information: ${e.message}")
+        }
     }
 }
