@@ -1,5 +1,7 @@
 package com.bookclub.poll.application
 
+import com.bookclub.poll.domain.PollRoundStatus
+
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test

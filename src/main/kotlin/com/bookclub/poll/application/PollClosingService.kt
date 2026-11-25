@@ -1,5 +1,7 @@
 package com.bookclub.poll.application
 
+import com.bookclub.poll.domain.PollRoundStatus
+
 import com.bookclub.poll.infrastructure.persistence.PollRoundRepository
 import org.springframework.stereotype.Service
 import org.slf4j.LoggerFactory

@@ -22,12 +22,21 @@ class TelegramMembershipUpdateHandler(
 
     fun registerNewMembers(update: Update) {
         val message = update.message() ?: return
+        if (message.chat().id() < 0) {
+            clubs.registerOrActivate(
+                message.chat().id(),
+                message.chat().title() ?: "Book Club"
+            )
+        }
         message.newChatMembers()?.forEach { member ->
             members.registerMember(message.chat().id(), member.id(), member.username(), member.firstName() ?: "Unknown")
         }
     }
 
     fun registerSender(chatId: Long, userId: Long, username: String?, firstName: String) {
-        if (chatId < 0) members.registerMember(chatId, userId, username, firstName)
+        if (chatId < 0) {
+            clubs.registerOrActivate(chatId, "Book Club")
+            members.registerMember(chatId, userId, username, firstName)
+        }
     }
 }

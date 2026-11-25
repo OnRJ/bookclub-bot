@@ -1,6 +1,8 @@
 
 package com.bookclub.poll.application
 
+import com.bookclub.poll.domain.PollRoundStatus
+
 import com.bookclub.poll.infrastructure.persistence.PollRoundOptionRepository
 import com.bookclub.poll.infrastructure.persistence.PollRoundRepository
 import com.bookclub.poll.infrastructure.persistence.PollVoteRepository

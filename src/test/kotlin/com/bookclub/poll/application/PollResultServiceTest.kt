@@ -1,5 +1,7 @@
 package com.bookclub.poll.application
 
+import com.bookclub.poll.domain.PollRoundStatus
+
 import com.bookclub.book.infrastructure.persistence.BookEntity
 import com.bookclub.poll.infrastructure.persistence.*
 import com.bookclub.submission.infrastructure.persistence.SubmissionEntity

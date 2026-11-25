@@ -7,6 +7,7 @@ import org.springframework.boot.CommandLineRunner
 import org.springframework.context.annotation.Bean
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Configuration
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 
 @Configuration
 class TelegramBotConfig {
@@ -14,12 +15,13 @@ class TelegramBotConfig {
 
     @Bean
     fun telegramBot(
-        @Value("\${telegram.bot.token}") token: String
+        @Value("\${telegram.bot.token:}") token: String
     ): TelegramBot {
         return TelegramBot(token)
     }
 
     @Bean
+    @ConditionalOnProperty(prefix = "telegram", name = ["enabled"], havingValue = "true", matchIfMissing = true)
     fun telegramBotCheck(
         telegramBotService: TelegramBotService
     ): CommandLineRunner {
@@ -35,6 +37,7 @@ class TelegramBotConfig {
     }
 
     @Bean
+    @ConditionalOnProperty(prefix = "telegram", name = ["enabled"], havingValue = "true", matchIfMissing = true)
     fun telegramUpdates(
         telegramBot: TelegramBot,
         telegramUpdateHandler: TelegramUpdateHandler
