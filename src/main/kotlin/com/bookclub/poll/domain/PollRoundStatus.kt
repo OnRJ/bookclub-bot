@@ -1,4 +1,4 @@
-package com.bookclub.poll.application
+package com.bookclub.poll.domain
 
 enum class PollRoundStatus {
     ACTIVE,

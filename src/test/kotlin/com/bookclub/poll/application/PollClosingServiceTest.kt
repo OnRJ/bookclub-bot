@@ -1,5 +1,7 @@
 package com.bookclub.poll.application
 
+import com.bookclub.poll.domain.PollRoundStatus
+
 import com.bookclub.poll.infrastructure.persistence.PollRoundEntity
 import io.mockk.*
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow

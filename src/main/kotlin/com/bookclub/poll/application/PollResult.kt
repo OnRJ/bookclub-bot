@@ -1,5 +1,7 @@
 package com.bookclub.poll.application
 
+import com.bookclub.poll.domain.PollRoundStatus
+
 data class PollOptionResult(
     val bookId: Long,
     val bookTitle: String,

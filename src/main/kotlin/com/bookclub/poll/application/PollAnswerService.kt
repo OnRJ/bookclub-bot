@@ -1,6 +1,8 @@
 
 package com.bookclub.poll.application
 
+import com.bookclub.poll.domain.PollRoundStatus
+
 import com.bookclub.poll.infrastructure.persistence.*
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional

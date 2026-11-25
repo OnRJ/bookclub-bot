@@ -26,6 +26,7 @@ app:
     url: ${FRONTEND_URL:https://bookclub-bot.duckdns.org}
 
 telegram:
+  enabled: ${TELEGRAM_ENABLED:true}
   bot:
-    token: ${TELEGRAM_BOT_TOKEN}
+    token: ${TELEGRAM_BOT_TOKEN:}
     username: book_worm_club_bot
