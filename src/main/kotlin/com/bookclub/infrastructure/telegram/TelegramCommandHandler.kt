@@ -28,7 +28,6 @@ class TelegramCommandHandler(
         val argument = parts.getOrNull(1)
 
         when (command) {
-            "/chat_id" -> telegramBot.execute(SendMessage(chatId, "ID этого чата: $chatId"))
             "/start" -> start(chatId, userId, argument)
             "/help" -> help(chatId)
             "/submit_books" -> if (chatId < 0) submitBooks(chatId) else
