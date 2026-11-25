@@ -73,19 +73,34 @@ class TelegramPollPublisher(
 
     private fun publishBookInfoSafely(pollRound: PollRoundResult) {
         try {
+            log.info("BOOK_INFO: Начинаем поиск. Книг: ${pollRound.bookTitles.size}")
+
             val books = pollRound.bookTitles.mapNotNull { title ->
-                googleBooksService.search(title)
+                log.info("BOOK_INFO: Ищем книгу: $title")
+                val result = googleBooksService.search(title)
+                log.info("BOOK_INFO: Результат для '$title': $result")
+                result
             }
 
-            if (books.isEmpty()) return
+            log.info("BOOK_INFO: Найдено книг: ${books.size}")
+
+            if (books.isEmpty()) {
+                log.info("BOOK_INFO: Ничего не найдено, сообщение не отправляем")
+                return
+            }
 
             val text = bookInfoFormatter.format(books)
+            log.info("BOOK_INFO: Текст подготовлен, отправляем в Telegram")
 
-            telegramBot.execute(
+            val response = telegramBot.execute(
                 SendMessage(pollRound.telegramChatId, text)
             )
+
+            log.info("BOOK_INFO: Ответ Telegram: ${response.isOk}, ${response.description()}")
+
         } catch (e: Exception) {
-            log.error("Failed to publish book information: ${e.message}")
+            log.error("BOOK_INFO ERROR: ${e.javaClass.name}: ${e.message}")
+            e.printStackTrace()
         }
     }
 }
