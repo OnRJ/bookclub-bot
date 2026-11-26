@@ -29,7 +29,13 @@ class BookMetadataQueueScheduler(
             BookMetadataStatus.PROCESSING
         )
 
-        val allStuckBooks = (stuckBooks + stuckWithoutTimestamp).distinctBy { it.id }
+        val retryableFailedBooks = books.findByMetadataStatusAndMetadataUpdatedAtBefore(
+            BookMetadataStatus.FAILED,
+            Instant.now().minus(Duration.ofMinutes(10))
+        )
+
+        val allStuckBooks = (stuckBooks + stuckWithoutTimestamp + retryableFailedBooks)
+            .distinctBy { it.id }
 
         allStuckBooks.forEach {
             it.metadataStatus = BookMetadataStatus.NEW
