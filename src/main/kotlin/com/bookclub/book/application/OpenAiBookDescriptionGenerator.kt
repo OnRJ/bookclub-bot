@@ -4,6 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import org.springframework.web.client.RestClient
+import org.springframework.http.client.JdkClientHttpRequestFactory
+import java.net.http.HttpClient
+import java.time.Duration
 
 @Component
 class OpenAiBookDescriptionGenerator(
@@ -14,7 +17,15 @@ class OpenAiBookDescriptionGenerator(
     private val model: String
 ) : BookDescriptionGenerator {
 
-    private val restClient = RestClient.create()
+    private val restClient = RestClient.builder()
+        .requestFactory(
+            JdkClientHttpRequestFactory(
+                HttpClient.newBuilder()
+                    .connectTimeout(Duration.ofSeconds(5))
+                    .build()
+            ).apply { setReadTimeout(Duration.ofSeconds(20)) }
+        )
+        .build()
 
     override fun generate(
         request: BookDescriptionRequest

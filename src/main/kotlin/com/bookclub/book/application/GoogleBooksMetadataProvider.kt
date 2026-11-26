@@ -6,6 +6,9 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import org.springframework.web.client.RestClient
 import org.springframework.web.util.UriComponentsBuilder
+import org.springframework.http.client.JdkClientHttpRequestFactory
+import java.net.http.HttpClient
+import java.time.Duration
 
 @Component
 class GoogleBooksMetadataProvider(
@@ -14,7 +17,15 @@ class GoogleBooksMetadataProvider(
     private val apiKey: String
 ) : BookMetadataProvider {
 
-    private val restClient = RestClient.create()
+    private val restClient = RestClient.builder()
+        .requestFactory(
+            JdkClientHttpRequestFactory(
+                HttpClient.newBuilder()
+                    .connectTimeout(Duration.ofSeconds(5))
+                    .build()
+            ).apply { setReadTimeout(Duration.ofSeconds(20)) }
+        )
+        .build()
 
     override fun search(
         title: String,
