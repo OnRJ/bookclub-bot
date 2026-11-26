@@ -4,7 +4,8 @@ import org.springframework.stereotype.Component
 
 @Component
 class BookMetadataResolver(
-    private val providers: List<BookMetadataProvider>
+    private val providers: List<BookMetadataProvider>,
+    private val aggregator: BookMetadataAggregator
 ) {
 
     fun resolve(
@@ -24,7 +25,9 @@ class BookMetadataResolver(
 
         val ranked = candidates
             .distinctBy { candidate ->
-                normalize(candidate.title) + "|" + normalize(candidate.author.orEmpty())
+                normalize(candidate.title) + "|" +
+                        normalize(candidate.author.orEmpty()) + "|" +
+                        candidate.source
             }
             .map { candidate ->
                 BookMetadataResolution(
@@ -34,7 +37,19 @@ class BookMetadataResolver(
             }
             .sortedByDescending { it.score }
 
-        return ranked.firstOrNull { it.score >= MIN_SCORE }
+        val eligible = ranked.filter { it.score >= MIN_SCORE }
+
+        val best = eligible.firstOrNull() ?: return null
+
+        val merged = aggregator.merge(
+            candidates = eligible.map { it.candidate },
+            preferred = best.candidate
+        )
+
+        return BookMetadataResolution(
+            candidate = merged,
+            score = best.score
+        )
     }
 
     private fun calculateScore(
@@ -57,6 +72,8 @@ class BookMetadataResolver(
         ) {
             if (normalize(requestedAuthor) == normalize(candidate.author)) {
                 score += AUTHOR_MATCH_BONUS
+            } else {
+                score -= AUTHOR_MISMATCH_PENALTY
             }
         }
 
@@ -93,6 +110,7 @@ class BookMetadataResolver(
         private const val EXACT_TITLE_SCORE = 80
         private const val PARTIAL_TITLE_SCORE = 40
         private const val AUTHOR_MATCH_BONUS = 20
+        private const val AUTHOR_MISMATCH_PENALTY = 40
         private const val MIN_SCORE = 75
     }
 }

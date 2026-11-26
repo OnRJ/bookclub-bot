@@ -8,9 +8,9 @@ import org.springframework.web.client.RestClient
 @Component
 class OpenAiBookDescriptionGenerator(
     private val objectMapper: ObjectMapper,
-    @Value("\${openai.api-key:}")
+    @Value("\${openai.api-key}")
     private val apiKey: String,
-    @Value("\${openai.model:gpt-4o-mini}")
+    @Value("\${openai.model")
     private val model: String
 ) : BookDescriptionGenerator {
 
