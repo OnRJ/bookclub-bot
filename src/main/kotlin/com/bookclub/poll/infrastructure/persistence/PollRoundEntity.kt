@@ -41,5 +41,8 @@ class PollRoundEntity(
     var closedAt: Instant? = null,
 
     @Column(name = "closing_started_at")
-    var closingStartedAt: Instant? = null
+    var closingStartedAt: Instant? = null,
+
+    @Column(name = "catalog_published_at")
+    var catalogPublishedAt: Instant? = null
 )

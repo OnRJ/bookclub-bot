@@ -12,8 +12,8 @@ class BookMetadataExecutorConfig {
     @Bean("bookMetadataExecutor")
     fun bookMetadataExecutor(): ThreadPoolTaskExecutor {
         val executor = ThreadPoolTaskExecutor()
-        executor.corePoolSize = 5
-        executor.maxPoolSize = 5
+        executor.corePoolSize = 10
+        executor.maxPoolSize = 10
         executor.queueCapacity = 50
         executor.setThreadNamePrefix("book-metadata-")
         executor.initialize()

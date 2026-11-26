@@ -68,14 +68,13 @@ class TelegramPollPublisher(
             telegramMessageId = telegramMessageId.toLong()
         )
 
-        publishCatalogButtonSafely(pollRound)
     }
 
-    private fun publishCatalogButtonSafely(pollRound: PollRoundResult) {
+    fun publishCatalogButtonSafely(pollRound: PollRoundResult): Boolean {
         try {
             if (botUsername.isBlank()) {
                 log.error("TELEGRAM_BOT_USERNAME is not configured")
-                return
+                return false
             }
 
             val catalogUrl =
@@ -98,8 +97,10 @@ class TelegramPollPublisher(
                 response.isOk,
                 response.description()
             )
+            return response.isOk
         } catch (e: Exception) {
             log.error("CATALOG_BUTTON ERROR: ${e.javaClass.name}: ${e.message}", e)
+            return false
         }
     }
 }

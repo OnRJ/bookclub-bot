@@ -32,6 +32,8 @@ interface PollRoundRepository : JpaRepository<PollRoundEntity, Long> {
         closingStartedAt: Instant
     ): List<PollRoundEntity>
 
+    fun findAllByCatalogPublishedAtIsNull(): List<PollRoundEntity>
+
     @Modifying(
         flushAutomatically = true,
         clearAutomatically = true
