@@ -68,14 +68,6 @@ class OpenLibraryMetadataProvider(
             .takeIf { it.isInt && it.asInt() > 0 }
             ?.asInt()
 
-        val coverId = doc.path("cover_i")
-            .takeIf { it.isInt }
-            ?.asInt()
-
-        val coverUrl = coverId?.let {
-            "https://covers.openlibrary.org/b/id/$it-M.jpg"
-        }
-
         val isbn = doc.path("isbn")
             .takeIf { it.isArray }
             ?.map { it.asText() }
@@ -98,7 +90,6 @@ class OpenLibraryMetadataProvider(
             author = author,
             description = description,
             pageCount = pageCount,
-            coverUrl = coverUrl,
             isbn = isbn,
             externalId = externalId,
             source = "OPEN_LIBRARY"

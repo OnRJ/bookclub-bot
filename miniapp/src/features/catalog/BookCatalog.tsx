@@ -11,16 +11,6 @@ function BookCard({ book }: { book: CatalogBook }) {
   return (
     <article className="catalog-book">
       <div className="catalog-book-main">
-        {book.coverUrl ? (
-          <img
-            className="catalog-cover"
-            src={book.coverUrl}
-            alt={`Обложка: ${book.title}`}
-          />
-        ) : (
-          <div className="catalog-cover-placeholder">📚</div>
-        )}
-
         <div className="catalog-book-info">
           <h2>{book.title}</h2>
 
@@ -85,7 +75,7 @@ export function BookCatalog({ pollRoundId }: Props) {
         <div className="eyebrow">
           КНИЖНЫЙ КЛУБ · ГОЛОСОВАНИЕ
         </div>
-        <h1>Книги<br />на выбор</h1>
+        <h1>Книги<br />для голосования</h1>
         <p>
           Знакомься с книгами, которые участвуют в голосовании.
         </p>

@@ -305,27 +305,6 @@ footer {
   align-items: flex-start;
 }
 
-.catalog-cover {
-  width: 100px;
-  min-width: 100px;
-  height: 145px;
-  object-fit: cover;
-  border-radius: 8px;
-  background: var(--app-border);
-}
-
-.catalog-cover-placeholder {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100px;
-  min-width: 100px;
-  height: 145px;
-  border-radius: 8px;
-  background: var(--app-border);
-  font-size: 32px;
-}
-
 .catalog-book-info {
   flex: 1;
   min-width: 0;

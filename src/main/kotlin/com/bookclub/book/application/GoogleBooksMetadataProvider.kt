@@ -10,7 +10,7 @@ import org.springframework.web.util.UriComponentsBuilder
 @Component
 class GoogleBooksMetadataProvider(
     private val objectMapper: ObjectMapper,
-    @Value("\${google.books.api-key:}")
+    @param:Value($$"${google.books.api-key:}")
     private val apiKey: String
 ) : BookMetadataProvider {
 
@@ -85,13 +85,6 @@ class GoogleBooksMetadataProvider(
             .takeIf { it.isInt && it.asInt() > 0 }
             ?.asInt()
 
-        val coverUrl = volumeInfo
-            .path("imageLinks")
-            .path("thumbnail")
-            .takeIf { it.isTextual }
-            ?.asText()
-            ?.replace("http://", "https://")
-
         val isbn = volumeInfo.path("industryIdentifiers")
             .takeIf { it.isArray }
             ?.firstOrNull {
@@ -112,7 +105,6 @@ class GoogleBooksMetadataProvider(
             author = author,
             description = description,
             pageCount = pageCount,
-            coverUrl = coverUrl,
             isbn = isbn,
             externalId = item.path("id")
                 .takeIf { it.isTextual }

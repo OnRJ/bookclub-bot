@@ -5,7 +5,6 @@ data class BookMetadataCandidate(
     val author: String?,
     val description: String?,
     val pageCount: Int?,
-    val coverUrl: String?,
     val isbn: String?,
     val externalId: String?,
     val source: String

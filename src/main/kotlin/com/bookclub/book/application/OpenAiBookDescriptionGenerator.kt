@@ -56,8 +56,6 @@ class OpenAiBookDescriptionGenerator(
                             - author должен содержать автора, если он известен.
                             - page_count должен быть положительным числом, если
                               известен, иначе null.
-                            - cover_url должен быть только реальным публичным
-                              URL обложки, если он известен, иначе null.
                         """.trimIndent()
                     ),
                     mapOf(
@@ -97,17 +95,13 @@ class OpenAiBookDescriptionGenerator(
                                 "page_count" to mapOf(
                                     "type" to listOf("integer", "null")
                                 ),
-                                "cover_url" to mapOf(
-                                    "type" to listOf("string", "null")
-                                )
                             ),
                             "required" to listOf(
                                 "description",
                                 "sufficient",
                                 "reason",
                                 "author",
-                                "page_count",
-                                "cover_url"
+                                "page_count"
                             ),
                             "additionalProperties" to false
                         )
@@ -144,11 +138,6 @@ class OpenAiBookDescriptionGenerator(
             val pageCount = result.path("page_count")
                 .takeIf { it.isInt && it.asInt() > 0 }
                 ?.asInt()
-            val coverUrl = result.path("cover_url")
-                .takeIf { it.isTextual }
-                ?.asText()
-                ?.trim()
-                ?.takeIf { it.startsWith("https://") }
 
             if (!sufficient || description.isBlank()) {
                 BookDescriptionGenerationResult(
@@ -158,8 +147,7 @@ class OpenAiBookDescriptionGenerator(
                         "Insufficient source facts"
                     ),
                     author = author,
-                    pageCount = pageCount,
-                    coverUrl = coverUrl
+                    pageCount = pageCount
                 )
             } else {
                 BookDescriptionGenerationResult(
@@ -167,8 +155,7 @@ class OpenAiBookDescriptionGenerator(
                     success = true,
                     reason = null,
                     author = author,
-                    pageCount = pageCount,
-                    coverUrl = coverUrl
+                    pageCount = pageCount
                 )
             }
         } catch (e: Exception) {

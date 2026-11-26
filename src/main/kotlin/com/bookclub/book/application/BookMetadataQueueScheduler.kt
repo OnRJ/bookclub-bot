@@ -42,7 +42,7 @@ class BookMetadataQueueScheduler(
 
         val batch = books.findByMetadataStatus(
             BookMetadataStatus.NEW,
-            PageRequest.of(0, 5)
+            PageRequest.of(0, 10)
         )
 
         if (batch.isEmpty()) return

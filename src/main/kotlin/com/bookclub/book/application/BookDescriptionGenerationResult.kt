@@ -5,6 +5,5 @@ data class BookDescriptionGenerationResult(
     val success: Boolean,
     val reason: String?,
     val author: String? = null,
-    val pageCount: Int? = null,
-    val coverUrl: String? = null
+    val pageCount: Int? = null
 )

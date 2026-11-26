@@ -5,7 +5,6 @@ export interface CatalogBook {
   author: string | null;
   description: string | null;
   pageCount: number | null;
-  coverUrl: string | null;
 }
 
 export interface BookCatalogResponse {

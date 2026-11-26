@@ -10,6 +10,5 @@ data class CatalogBook(
     val title: String,
     val author: String?,
     val description: String?,
-    val pageCount: Int?,
-    val coverUrl: String?
+    val pageCount: Int?
 )

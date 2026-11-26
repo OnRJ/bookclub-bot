@@ -46,8 +46,6 @@ class BookMetadataAggregator {
             pageCount = preferred.pageCount
                 ?: firstPositive { it.pageCount },
 
-            coverUrl = preferred.coverUrl?.takeIf { it.isNotBlank() }
-                ?: firstNonBlank { it.coverUrl },
 
             isbn = preferred.isbn?.takeIf { it.isNotBlank() }
                 ?: firstNonBlank { it.isbn },

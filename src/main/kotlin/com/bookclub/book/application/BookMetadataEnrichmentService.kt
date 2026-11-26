@@ -10,7 +10,8 @@ import java.time.Instant
 class BookMetadataEnrichmentService(
     private val books: BookRepository,
     private val metadataResolver: BookMetadataResolver,
-    private val descriptionGenerator: BookDescriptionGenerator
+    private val descriptionGenerator: BookDescriptionGenerator,
+    private val googleBooksProvider: GoogleBooksMetadataProvider
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
 
@@ -41,6 +42,7 @@ class BookMetadataEnrichmentService(
                     )
                 )
                 applyAiMetadata(book, generated)
+                retryGoogleMetadata(book)
                 if (generated.success && !generated.description.isNullOrBlank()) {
                     book.description = generated.description
                     book.descriptionSource = "AI_FALLBACK"
@@ -61,10 +63,6 @@ class BookMetadataEnrichmentService(
 
             if (book.pageCount == null && candidate.pageCount != null) {
                 book.pageCount = candidate.pageCount
-            }
-
-            if (book.coverUrl.isNullOrBlank() && !candidate.coverUrl.isNullOrBlank()) {
-                book.coverUrl = candidate.coverUrl
             }
 
             if (book.isbn.isNullOrBlank() && !candidate.isbn.isNullOrBlank()) {
@@ -121,8 +119,22 @@ class BookMetadataEnrichmentService(
         if (book.pageCount == null && generated.pageCount != null) {
             book.pageCount = generated.pageCount
         }
-        if (book.coverUrl.isNullOrBlank() && !generated.coverUrl.isNullOrBlank()) {
-            book.coverUrl = generated.coverUrl
+    }
+
+    private fun retryGoogleMetadata(book: com.bookclub.book.infrastructure.persistence.BookEntity) {
+        try {
+            val candidate = googleBooksProvider
+                .search(book.title, book.author)
+                .firstOrNull { it.pageCount != null || it.isbn != null }
+                ?: return
+
+            if (book.author.isNullOrBlank() && !candidate.author.isNullOrBlank()) {
+                book.author = candidate.author
+            }
+            if (book.pageCount == null) book.pageCount = candidate.pageCount
+            if (book.isbn.isNullOrBlank()) book.isbn = candidate.isbn
+        } catch (exception: Exception) {
+            log.warn("Google Books fallback failed for '{}': {}", book.title, exception.message)
         }
     }
 }

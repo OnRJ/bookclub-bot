@@ -26,8 +26,7 @@ class BookCatalogService(
                 title = option.book.title,
                 author = option.book.author,
                 description = option.book.description,
-                pageCount = option.book.pageCount,
-                coverUrl = option.book.coverUrl
+                pageCount = option.book.pageCount
             )
         }
 
