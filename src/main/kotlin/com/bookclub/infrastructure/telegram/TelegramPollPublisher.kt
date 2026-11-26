@@ -2,6 +2,7 @@ package com.bookclub.infrastructure.telegram
 
 import com.bookclub.poll.application.PollRoundResult
 import com.bookclub.poll.application.PollRoundService
+import com.bookclub.poll.infrastructure.persistence.PollRoundOptionRepository
 import com.bookclub.infrastructure.bookinfo.GoogleBooksService
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.request.InlineKeyboardButton
@@ -19,6 +20,7 @@ import java.util.Locale
 class TelegramPollPublisher(
     private val telegramBot: TelegramBot,
     private val pollRoundService: PollRoundService,
+    private val pollRoundOptionRepository: PollRoundOptionRepository,
     private val googleBooksService: GoogleBooksService
 ) {
 
@@ -75,15 +77,30 @@ class TelegramPollPublisher(
 
     private fun enrichBooksSafely(pollRound: PollRoundResult) {
         try {
-            log.info("BOOK_INFO: Начинаем поиск. Книг: ${pollRound.bookTitles.size}")
+            val options = pollRoundOptionRepository
+                .findAllByPollRoundIdOrderByOptionIndex(
+                    pollRound.pollRoundId
+                )
 
-            pollRound.bookTitles.forEach { title ->
-                log.info("BOOK_INFO: Ищем книгу: $title")
-                val result = googleBooksService.search(title)
-                log.info("BOOK_INFO: Результат для '$title': $result")
+            log.info(
+                "BOOK_INFO: Enriching books for round {}. Books: {}",
+                pollRound.pollRoundId,
+                options.size
+            )
+
+            options.forEach { option ->
+                try {
+                    googleBooksService.enrichBook(option.book)
+                } catch (e: Exception) {
+                    log.error(
+                        "BOOK_INFO: Failed to enrich book '{}'",
+                        option.book.title,
+                        e
+                    )
+                }
             }
         } catch (e: Exception) {
-            log.error("BOOK_INFO ERROR: ${e.javaClass.name}: ${e.message}", e)
+            log.error("BOOK_INFO ERROR for round {}", pollRound.pollRoundId, e)
         }
     }
 
@@ -115,7 +132,7 @@ class TelegramPollPublisher(
                 response.description()
             )
         } catch (e: Exception) {
-            log.error("CATALOG_BUTTON ERROR: ${e.javaClass.name}: ${e.message}", e)
+            log.error("CATALOG_BUTTON ERROR", e)
         }
     }
 }
