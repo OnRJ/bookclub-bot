@@ -2,7 +2,6 @@ package com.bookclub.infrastructure.telegram
 
 import com.bookclub.poll.application.PollRoundResult
 import com.bookclub.poll.application.PollRoundService
-import com.bookclub.infrastructure.bookinfo.GoogleBooksService
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.request.InlineKeyboardButton
 import com.pengrad.telegrambot.model.request.InlineKeyboardMarkup
@@ -18,8 +17,7 @@ import java.util.Locale
 @Service
 class TelegramPollPublisher(
     private val telegramBot: TelegramBot,
-    private val pollRoundService: PollRoundService,
-    private val googleBooksService: GoogleBooksService
+    private val pollRoundService: PollRoundService
 ) {
 
     private val log = LoggerFactory.getLogger(javaClass)
@@ -69,22 +67,7 @@ class TelegramPollPublisher(
             telegramMessageId = telegramMessageId.toLong()
         )
 
-        enrichBooksSafely(pollRound)
         publishCatalogButtonSafely(pollRound)
-    }
-
-    private fun enrichBooksSafely(pollRound: PollRoundResult) {
-        try {
-            log.info("BOOK_INFO: Начинаем поиск. Книг: ${pollRound.bookTitles.size}")
-
-            pollRound.bookTitles.forEach { title ->
-                log.info("BOOK_INFO: Ищем книгу: $title")
-                val result = googleBooksService.search(title)
-                log.info("BOOK_INFO: Результат для '$title': $result")
-            }
-        } catch (e: Exception) {
-            log.error("BOOK_INFO ERROR: ${e.javaClass.name}: ${e.message}", e)
-        }
     }
 
     private fun publishCatalogButtonSafely(pollRound: PollRoundResult) {
