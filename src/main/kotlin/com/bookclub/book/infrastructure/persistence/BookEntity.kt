@@ -1,4 +1,3 @@
-
 package com.bookclub.book.infrastructure.persistence
 
 import jakarta.persistence.Column
@@ -29,6 +28,9 @@ class BookEntity(
 
     @Column(name = "page_count")
     var pageCount: Int? = null,
+
+    @Column(name = "cover_url", columnDefinition = "text")
+    var coverUrl: String? = null,
 
     @Column(name = "external_id")
     var externalId: String? = null,

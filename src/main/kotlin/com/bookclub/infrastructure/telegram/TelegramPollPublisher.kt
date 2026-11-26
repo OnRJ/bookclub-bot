@@ -1,11 +1,11 @@
-
 package com.bookclub.infrastructure.telegram
 
 import com.bookclub.poll.application.PollRoundResult
 import com.bookclub.poll.application.PollRoundService
 import com.bookclub.infrastructure.bookinfo.GoogleBooksService
-import com.bookclub.infrastructure.bookinfo.BookInfoFormatter
 import com.pengrad.telegrambot.TelegramBot
+import com.pengrad.telegrambot.model.request.InlineKeyboardButton
+import com.pengrad.telegrambot.model.request.InlineKeyboardMarkup
 import com.pengrad.telegrambot.model.request.InputPollOption
 import com.pengrad.telegrambot.request.SendPoll
 import com.pengrad.telegrambot.request.SendMessage
@@ -19,10 +19,11 @@ import java.util.Locale
 class TelegramPollPublisher(
     private val telegramBot: TelegramBot,
     private val pollRoundService: PollRoundService,
-    private val googleBooksService: GoogleBooksService,
-    private val bookInfoFormatter: BookInfoFormatter
+    private val googleBooksService: GoogleBooksService
 ) {
+
     private val log = LoggerFactory.getLogger(javaClass)
+    private val botUsername = System.getenv("TELEGRAM_BOT_USERNAME")
 
     fun publishFirstRound(
         pollRound: PollRoundResult,
@@ -68,39 +69,53 @@ class TelegramPollPublisher(
             telegramMessageId = telegramMessageId.toLong()
         )
 
-        publishBookInfoSafely(pollRound)
+        enrichBooksSafely(pollRound)
+        publishCatalogButtonSafely(pollRound)
     }
 
-    private fun publishBookInfoSafely(pollRound: PollRoundResult) {
+    private fun enrichBooksSafely(pollRound: PollRoundResult) {
         try {
             log.info("BOOK_INFO: Начинаем поиск. Книг: ${pollRound.bookTitles.size}")
 
-            val books = pollRound.bookTitles.mapNotNull { title ->
+            pollRound.bookTitles.forEach { title ->
                 log.info("BOOK_INFO: Ищем книгу: $title")
                 val result = googleBooksService.search(title)
                 log.info("BOOK_INFO: Результат для '$title': $result")
-                result
             }
+        } catch (e: Exception) {
+            log.error("BOOK_INFO ERROR: ${e.javaClass.name}: ${e.message}", e)
+        }
+    }
 
-            log.info("BOOK_INFO: Найдено книг: ${books.size}")
-
-            if (books.isEmpty()) {
-                log.info("BOOK_INFO: Ничего не найдено, сообщение не отправляем")
+    private fun publishCatalogButtonSafely(pollRound: PollRoundResult) {
+        try {
+            if (botUsername.isNullOrBlank()) {
+                log.error("TELEGRAM_BOT_USERNAME is not configured")
                 return
             }
 
-            val text = bookInfoFormatter.format(books)
-            log.info("BOOK_INFO: Текст подготовлен, отправляем в Telegram")
+            val catalogUrl =
+                "https://t.me/$botUsername?startapp=books_${pollRound.pollRoundId}"
 
-            val response = telegramBot.execute(
-                SendMessage(pollRound.telegramChatId, text)
+            val keyboard = InlineKeyboardMarkup(
+                InlineKeyboardButton("📚 Посмотреть книги")
+                    .url(catalogUrl)
             )
 
-            log.info("BOOK_INFO: Ответ Telegram: ${response.isOk}, ${response.description()}")
+            val response = telegramBot.execute(
+                SendMessage(
+                    pollRound.telegramChatId,
+                    "📚 Книги голосования собраны в каталоге. Откройте его, чтобы познакомиться с вариантами."
+                ).replyMarkup(keyboard)
+            )
 
+            log.info(
+                "CATALOG_BUTTON: Telegram response: {}, {}",
+                response.isOk,
+                response.description()
+            )
         } catch (e: Exception) {
-            log.error("BOOK_INFO ERROR: ${e.javaClass.name}: ${e.message}")
-            e.printStackTrace()
+            log.error("CATALOG_BUTTON ERROR: ${e.javaClass.name}: ${e.message}", e)
         }
     }
 }
