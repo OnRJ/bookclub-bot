@@ -40,6 +40,7 @@ class BookMetadataEnrichmentService(
                         metadataSource = "AI_FALLBACK"
                     )
                 )
+                applyAiMetadata(book, generated)
                 if (generated.success && !generated.description.isNullOrBlank()) {
                     book.description = generated.description
                     book.descriptionSource = "AI_FALLBACK"
@@ -83,6 +84,7 @@ class BookMetadataEnrichmentService(
                         metadataSource = candidate.source
                     )
                 )
+                applyAiMetadata(book, generated)
 
                 if (generated.success && !generated.description.isNullOrBlank()) {
                     book.description = generated.description
@@ -106,6 +108,21 @@ class BookMetadataEnrichmentService(
             book.metadataStatus = BookMetadataStatus.FAILED
             book.metadataUpdatedAt = Instant.now()
             books.save(book)
+        }
+    }
+
+    private fun applyAiMetadata(
+        book: com.bookclub.book.infrastructure.persistence.BookEntity,
+        generated: BookDescriptionGenerationResult
+    ) {
+        if (book.author.isNullOrBlank() && !generated.author.isNullOrBlank()) {
+            book.author = generated.author
+        }
+        if (book.pageCount == null && generated.pageCount != null) {
+            book.pageCount = generated.pageCount
+        }
+        if (book.coverUrl.isNullOrBlank() && !generated.coverUrl.isNullOrBlank()) {
+            book.coverUrl = generated.coverUrl
         }
     }
 }

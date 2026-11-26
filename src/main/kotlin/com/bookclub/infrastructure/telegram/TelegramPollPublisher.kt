@@ -19,7 +19,7 @@ import java.util.Locale
 class TelegramPollPublisher(
     private val telegramBot: TelegramBot,
     private val pollRoundService: PollRoundService,
-    @Value("\${telegram.bot.username:}")
+    @param:Value($$"${telegram.bot.username:}")
     private val botUsername: String
 ) {
 
@@ -73,7 +73,7 @@ class TelegramPollPublisher(
 
     private fun publishCatalogButtonSafely(pollRound: PollRoundResult) {
         try {
-            if (botUsername.isNullOrBlank()) {
+            if (botUsername.isBlank()) {
                 log.error("TELEGRAM_BOT_USERNAME is not configured")
                 return
             }

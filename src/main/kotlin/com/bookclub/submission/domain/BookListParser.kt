@@ -34,13 +34,7 @@ class BookListParser {
             "Expected exactly 10 books, but received ${books.size}"
         }
 
-        val parsed = books.map { line ->
-            val parts = line.split(Regex("\\s+[—–-]\\s+"), limit = 2)
-            ParsedBook(
-                title = parts[0].trim(),
-                author = parts.getOrNull(1)?.trim()?.takeIf { it.isNotBlank() }
-            )
-        }
+        val parsed = books.map(::parseBookLine)
 
         require(parsed.all { it.title.isNotBlank() }) { "Book titles cannot be blank" }
 
@@ -53,6 +47,15 @@ class BookListParser {
         }
 
         return parsed
+    }
+
+    fun parseBookLine(line: String): ParsedBook {
+        val cleaned = cleanLine(numberedPrefix.replace(line, "").trim())
+        val parts = cleaned.split(Regex("\\s*[—–]\\s*|\\s+-\\s+"), limit = 2)
+        return ParsedBook(
+            title = parts[0].trim(),
+            author = parts.getOrNull(1)?.trim()?.takeIf { it.isNotBlank() }
+        )
     }
 
     private fun cleanLine(line: String): String = line

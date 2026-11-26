@@ -8,9 +8,9 @@ import org.springframework.web.client.RestClient
 @Component
 class OpenAiBookDescriptionGenerator(
     private val objectMapper: ObjectMapper,
-    @Value("\${openai.api-key}")
+    @param:Value($$"${openai.api-key}")
     private val apiKey: String,
-    @Value("\${openai.model:}")
+    @param:Value($$"${openai.model:}")
     private val model: String
 ) : BookDescriptionGenerator {
 
@@ -36,8 +36,8 @@ class OpenAiBookDescriptionGenerator(
                         "role" to "system",
                         "content" to """
                             Ты редактор книжного клуба.
-                            Напиши оригинальное краткое описание
-                            книги на русском языке.
+                            Определи метаданные книги и напиши оригинальное
+                            краткое описание книги на русском языке.
 
                             Правила:
                             - 3-4 предложения.
@@ -53,6 +53,11 @@ class OpenAiBookDescriptionGenerator(
                               верни пустое описание и sufficient=false.
                             - Не копируй исходное описание дословно.
                             - Не упоминай, что текст создан ИИ.
+                            - author должен содержать автора, если он известен.
+                            - page_count должен быть положительным числом, если
+                              известен, иначе null.
+                            - cover_url должен быть только реальным публичным
+                              URL обложки, если он известен, иначе null.
                         """.trimIndent()
                     ),
                     mapOf(
@@ -85,12 +90,24 @@ class OpenAiBookDescriptionGenerator(
                                 ),
                                 "reason" to mapOf(
                                     "type" to "string"
+                                ),
+                                "author" to mapOf(
+                                    "type" to listOf("string", "null")
+                                ),
+                                "page_count" to mapOf(
+                                    "type" to listOf("integer", "null")
+                                ),
+                                "cover_url" to mapOf(
+                                    "type" to listOf("string", "null")
                                 )
                             ),
                             "required" to listOf(
                                 "description",
                                 "sufficient",
-                                "reason"
+                                "reason",
+                                "author",
+                                "page_count",
+                                "cover_url"
                             ),
                             "additionalProperties" to false
                         )
@@ -119,6 +136,19 @@ class OpenAiBookDescriptionGenerator(
             val description = result.path("description")
                 .asText()
                 .trim()
+            val author = result.path("author")
+                .takeIf { it.isTextual }
+                ?.asText()
+                ?.trim()
+                ?.takeIf { it.isNotBlank() }
+            val pageCount = result.path("page_count")
+                .takeIf { it.isInt && it.asInt() > 0 }
+                ?.asInt()
+            val coverUrl = result.path("cover_url")
+                .takeIf { it.isTextual }
+                ?.asText()
+                ?.trim()
+                ?.takeIf { it.startsWith("https://") }
 
             if (!sufficient || description.isBlank()) {
                 BookDescriptionGenerationResult(
@@ -126,13 +156,19 @@ class OpenAiBookDescriptionGenerator(
                     success = false,
                     reason = result.path("reason").asText(
                         "Insufficient source facts"
-                    )
+                    ),
+                    author = author,
+                    pageCount = pageCount,
+                    coverUrl = coverUrl
                 )
             } else {
                 BookDescriptionGenerationResult(
                     description = description,
                     success = true,
-                    reason = null
+                    reason = null,
+                    author = author,
+                    pageCount = pageCount,
+                    coverUrl = coverUrl
                 )
             }
         } catch (e: Exception) {
