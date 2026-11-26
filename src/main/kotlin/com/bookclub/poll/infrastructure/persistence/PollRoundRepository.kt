@@ -47,4 +47,20 @@ interface PollRoundRepository : JpaRepository<PollRoundEntity, Long> {
     fun claimForClosing(
         @Param("pollRoundId") pollRoundId: Long
     ): Int
+
+    @Modifying(
+        flushAutomatically = true,
+        clearAutomatically = true
+    )
+    @Transactional
+    @Query("""
+        UPDATE PollRoundEntity p
+        SET p.status = 'ACTIVE',
+            p.closingStartedAt = NULL
+        WHERE p.id = :pollRoundId
+          AND p.status = 'CLOSING'
+    """)
+    fun releaseClosingClaim(
+        @Param("pollRoundId") pollRoundId: Long
+    ): Int
 }

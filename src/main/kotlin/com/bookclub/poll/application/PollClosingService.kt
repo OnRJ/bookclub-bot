@@ -35,6 +35,7 @@ class PollClosingService(
 
         if (!stopResponse.ok) {
             log.error("Failed to stop poll {}: {}", pollRoundId, stopResponse.description)
+            pollRounds.releaseClosingClaim(pollRoundId)
             return
         }
 

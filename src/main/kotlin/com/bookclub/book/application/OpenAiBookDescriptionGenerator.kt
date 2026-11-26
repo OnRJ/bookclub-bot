@@ -10,7 +10,7 @@ class OpenAiBookDescriptionGenerator(
     private val objectMapper: ObjectMapper,
     @Value("\${openai.api-key}")
     private val apiKey: String,
-    @Value("\${openai.model")
+    @Value("\${openai.model:}")
     private val model: String
 ) : BookDescriptionGenerator {
 

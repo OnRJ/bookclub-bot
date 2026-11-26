@@ -10,6 +10,7 @@ import com.pengrad.telegrambot.request.SendPoll
 import com.pengrad.telegrambot.request.SendMessage
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import org.springframework.beans.factory.annotation.Value
 import java.time.YearMonth
 import java.time.format.TextStyle
 import java.util.Locale
@@ -17,12 +18,12 @@ import java.util.Locale
 @Service
 class TelegramPollPublisher(
     private val telegramBot: TelegramBot,
-    private val pollRoundService: PollRoundService
+    private val pollRoundService: PollRoundService,
+    @Value("\${telegram.bot.username:}")
+    private val botUsername: String
 ) {
 
     private val log = LoggerFactory.getLogger(javaClass)
-    private val botUsername = System.getenv("TELEGRAM_BOT_USERNAME")
-
     fun publishFirstRound(
         pollRound: PollRoundResult,
         readingMonth: YearMonth

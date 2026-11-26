@@ -1,12 +1,14 @@
 package com.bookclub.book.application
 
 import org.springframework.stereotype.Component
+import org.slf4j.LoggerFactory
 
 @Component
 class BookMetadataResolver(
     private val providers: List<BookMetadataProvider>,
     private val aggregator: BookMetadataAggregator
 ) {
+    private val log = LoggerFactory.getLogger(javaClass)
 
     fun resolve(
         title: String,
@@ -18,7 +20,14 @@ class BookMetadataResolver(
         val candidates = providers.flatMap { provider ->
             try {
                 provider.search(title, author)
-            } catch (_: Exception) {
+            } catch (exception: Exception) {
+                log.warn(
+                    "Metadata provider {} failed for '{}' (author='{}')",
+                    provider::class.simpleName,
+                    title,
+                    author,
+                    exception
+                )
                 emptyList()
             }
         }
