@@ -6,7 +6,6 @@ import com.bookclub.submission.application.SubmitBooksCommand
 import com.bookclub.submission.application.SubmitBooksUseCase
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.request.InputPollOption
-import com.pengrad.telegrambot.request.SendMessage
 import com.pengrad.telegrambot.request.SendPoll
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -30,7 +29,14 @@ class TelegramSubmissionWorkflow(
 
         try {
             val result = submitBooksUseCase.execute(
-                SubmitBooksCommand(pending.groupId, pending.userId, pending.username, pending.firstName, pending.books)
+                SubmitBooksCommand(
+                    pending.groupId,
+                    pending.userId,
+                    pending.username,
+                    pending.firstName,
+                    pending.books.map { it.title },
+                    pending.books.map { it.author }
+                )
             )
             val pollRound = pollRoundService.startFirstRound(
                 StartPollCommand(result.submissionId, pending.groupId)

@@ -30,7 +30,23 @@ class BookMetadataEnrichmentService(
             val resolution = metadataResolver.resolve(book.title, book.author)
 
             if (resolution == null) {
-                book.metadataStatus = BookMetadataStatus.FAILED
+                val generated = descriptionGenerator.generate(
+                    BookDescriptionRequest(
+                        title = book.title,
+                        author = book.author,
+                        sourceDescription = null,
+                        pageCount = book.pageCount,
+                        isbn = book.isbn,
+                        metadataSource = "AI_FALLBACK"
+                    )
+                )
+                if (generated.success && !generated.description.isNullOrBlank()) {
+                    book.description = generated.description
+                    book.descriptionSource = "AI_FALLBACK"
+                    book.metadataStatus = BookMetadataStatus.PARTIAL
+                } else {
+                    book.metadataStatus = BookMetadataStatus.FAILED
+                }
                 book.metadataUpdatedAt = Instant.now()
                 books.save(book)
                 return

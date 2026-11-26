@@ -1,6 +1,5 @@
 package com.bookclub.submission.domain
 
-import com.bookclub.submission.domain.BookListParser
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
@@ -27,8 +26,8 @@ class BookListParserTest {
         val result = parser.parse(input)
 
         assertEquals(10, result.size)
-        assertEquals("Book One", result.first())
-        assertEquals("Book Ten", result.last())
+        assertEquals("Book One", result.first().title)
+        assertEquals("Book Ten", result.last().title)
     }
 
     @Test
@@ -49,6 +48,30 @@ class BookListParserTest {
         }
 
         assertEquals(10, parser.parse(input).size)
+    }
+
+    @Test
+    fun `should parse markdown titles and authors and ignore heading`() {
+        val input = """
+            ###
+            1. **Идиот** — Достоевский
+            2. **Бойцовский клуб** — Паланик
+            3. **Тень ветра** — Сафон
+            4. **Коллекционер** — Фаулз
+            5. **Маленькая жизнь** — Янагихара
+            6. **О дивный новый мир** — Хаксли
+            7. **Зов предков** — Лондон
+            8. **Исчезнувшая** — Флинн
+            9. **Человек в поисках смысла** — Франкл
+            10. **Вино из одуванчиков** — Брэдбери
+        """.trimIndent()
+
+        val result = parser.parse(input)
+
+        assertEquals("Идиот", result.first().title)
+        assertEquals("Достоевский", result.first().author)
+        assertEquals("Вино из одуванчиков", result.last().title)
+        assertEquals("Брэдбери", result.last().author)
     }
 
     @Test

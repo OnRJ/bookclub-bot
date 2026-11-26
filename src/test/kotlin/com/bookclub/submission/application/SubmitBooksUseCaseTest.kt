@@ -24,7 +24,12 @@ class SubmitBooksUseCaseTest {
         val result = useCase.execute(SubmitBooksCommand(-100L, 7L, "reader", "Reader", books))
 
         assertEquals(YearMonth.of(2026, 11), result.readingMonth)
-        verify { writer.create(-100L, 7L, "reader", "Reader", YearMonth.of(2026, 11), books) }
+        verify {
+            writer.create(
+                -100L, 7L, "reader", "Reader", YearMonth.of(2026, 11),
+                books.map { com.bookclub.submission.domain.BookListParser.ParsedBook(it) }
+            )
+        }
     }
 
     @Test

@@ -8,6 +8,7 @@ import com.bookclub.club.infrastructure.persistence.ClubMemberEntity
 import com.bookclub.club.infrastructure.persistence.ClubMemberRepository
 import com.bookclub.club.infrastructure.persistence.ClubRepository
 import com.bookclub.submission.application.*
+import com.bookclub.submission.domain.BookListParser.ParsedBook
 import com.bookclub.user.infrastructure.persistence.UserEntity
 import com.bookclub.user.infrastructure.persistence.UserRepository
 import org.springframework.stereotype.Component
@@ -31,7 +32,7 @@ class JpaSubmissionAdapter(
         username: String?,
         firstName: String,
         readingMonth: YearMonth,
-        bookTitles: List<String>
+        books: List<ParsedBook>
     ): SubmissionResult {
 
         val club = clubs.findByTelegramChatId(telegramChatId)
@@ -85,8 +86,8 @@ class JpaSubmissionAdapter(
             )
         )
 
-        val savedBooks = bookTitles.map { title ->
-            findOrCreateBook(title)
+        val savedBooks = books.map { book ->
+            findOrCreateBook(book)
         }
 
         submissionBooks.saveAll(
@@ -103,12 +104,12 @@ class JpaSubmissionAdapter(
             requireNotNull(submission.id),
             readingMonth,
             telegramUserId,
-            bookTitles
+            books.map { it.title }
         )
     }
 
-    private fun findOrCreateBook(title: String): BookEntity {
-        val existing = books.findFirstByTitleIgnoreCase(title)
+    private fun findOrCreateBook(input: ParsedBook): BookEntity {
+        val existing = books.findFirstByTitleIgnoreCase(input.title)
 
         if (existing != null) {
             return existing
@@ -116,7 +117,8 @@ class JpaSubmissionAdapter(
 
         return books.save(
             BookEntity(
-                title = title,
+                title = input.title,
+                author = input.author,
                 metadataStatus = BookMetadataStatus.NEW
             )
         )

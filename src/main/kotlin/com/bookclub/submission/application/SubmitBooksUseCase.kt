@@ -1,6 +1,7 @@
 package com.bookclub.submission.application
 
 import com.bookclub.submission.domain.ReadingMonthPolicy
+import com.bookclub.submission.domain.BookListParser.ParsedBook
 import org.springframework.stereotype.Service
 import com.bookclub.shared.application.ValidationException
 import java.time.Clock
@@ -17,12 +18,14 @@ class SubmitBooksUseCase(
         if (command.firstName.isBlank()) throw ValidationException("First name is required")
         if (command.bookTitles.size != 10) throw ValidationException("Exactly 10 titles are required")
         if (command.bookTitles.any { it.isBlank() }) throw ValidationException("Titles cannot be blank")
-        val titles = command.bookTitles.map(String::trim)
-        if (titles.map { it.lowercase() }.distinct().size != 10) throw ValidationException("Duplicate titles")
+        if (command.bookTitles.map { it.lowercase().trim() }.distinct().size != 10) throw ValidationException("Duplicate titles")
+        val books = command.bookTitles.mapIndexed { index, title ->
+            ParsedBook(title.trim(), command.bookAuthors.getOrNull(index))
+        }
         val month = monthPolicy.determine(LocalDate.now(clock))
         return writer.create(
             command.telegramChatId, command.telegramUserId,
-            command.username, command.firstName, month, titles
+            command.username, command.firstName, month, books
         )
     }
 }

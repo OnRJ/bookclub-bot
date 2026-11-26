@@ -1,6 +1,8 @@
 
 package com.bookclub.infrastructure.telegram
 
+import com.bookclub.submission.domain.BookListParser.ParsedBook
+
 import org.springframework.stereotype.Component
 import java.util.concurrent.ConcurrentHashMap
 
@@ -9,7 +11,7 @@ data class PendingSubmission(
     val userId: Long,
     val username: String?,
     val firstName: String,
-    val books: List<String>
+    val books: List<ParsedBook>
 )
 
 @Component
@@ -32,7 +34,7 @@ class SubmissionConversationState {
         userId: Long,
         username: String?,
         firstName: String,
-        books: List<String>
+        books: List<ParsedBook>
     ) {
         val current = activeSubmissions[userId] ?: return
 

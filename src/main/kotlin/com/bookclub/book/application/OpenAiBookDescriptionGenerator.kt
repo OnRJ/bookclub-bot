@@ -28,14 +28,6 @@ class OpenAiBookDescriptionGenerator(
             )
         }
 
-        if (request.sourceDescription.isNullOrBlank()) {
-            return BookDescriptionGenerationResult(
-                description = null,
-                success = false,
-                reason = "No source facts available"
-            )
-        }
-
         return try {
             val payload = mapOf(
                 "model" to model,
@@ -50,12 +42,14 @@ class OpenAiBookDescriptionGenerator(
                             Правила:
                             - 3-4 предложения.
                             - Без спойлеров.
-                            - Используй только факты из предоставленного
-                              источника.
+                            - Если описание источника предоставлено,
+                              используй только подтвержденные им факты.
+                            - Если описания источника нет, используй только
+                              общеизвестные сведения по названию и автору.
                             - Не придумывай персонажей, события,
                               темы или обстоятельства.
                             - Не добавляй неподтвержденные факты.
-                            - Если фактов недостаточно для описания,
+                            - Если надежных фактов недостаточно для описания,
                               верни пустое описание и sufficient=false.
                             - Не копируй исходное описание дословно.
                             - Не упоминай, что текст создан ИИ.
