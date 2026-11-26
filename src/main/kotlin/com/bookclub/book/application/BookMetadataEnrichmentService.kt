@@ -2,6 +2,7 @@ package com.bookclub.book.application
 
 import com.bookclub.book.infrastructure.persistence.BookMetadataStatus
 import com.bookclub.book.infrastructure.persistence.BookRepository
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.time.Instant
 
@@ -11,6 +12,7 @@ class BookMetadataEnrichmentService(
     private val metadataResolver: BookMetadataResolver,
     private val descriptionGenerator: BookDescriptionGenerator
 ) {
+    private val log = LoggerFactory.getLogger(javaClass)
 
     fun enrich(bookId: Long) {
         val book = books.findById(bookId).orElse(null) ?: return
@@ -83,6 +85,8 @@ class BookMetadataEnrichmentService(
             books.save(book)
 
         } catch (exception: Exception) {
+            log.error("BOOK_METADATA FAILED for book {}: {}", book.title, exception.message, exception)
+
             book.metadataStatus = BookMetadataStatus.FAILED
             book.metadataUpdatedAt = Instant.now()
             books.save(book)

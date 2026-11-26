@@ -81,7 +81,7 @@ class TelegramPollPublisher(
                 "https://t.me/$botUsername?startapp=books_${pollRound.pollRoundId}"
 
             val keyboard = InlineKeyboardMarkup(
-                InlineKeyboardButton("📚 Посмотреть книги")
+                InlineKeyboardButton("Посмотреть книги")
                     .url(catalogUrl)
             )
 
