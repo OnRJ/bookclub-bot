@@ -52,6 +52,12 @@ class BookEntity(
     @Column(name = "metadata_updated_at")
     var metadataUpdatedAt: Instant? = null,
 
+    @Column(name = "metadata_attempts", nullable = false)
+    var metadataAttempts: Int = 0,
+
+    @Column(name = "metadata_error", columnDefinition = "text")
+    var metadataError: String? = null,
+
     @JdbcTypeCode(SqlTypes.TIMESTAMP_WITH_TIMEZONE)
     @Column(
         name = "created_at",

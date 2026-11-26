@@ -49,6 +49,7 @@ class BookMetadataEnrichmentService(
                     book.metadataStatus = BookMetadataStatus.PARTIAL
                 } else {
                     book.metadataStatus = BookMetadataStatus.FAILED
+                    book.metadataError = generated.reason ?: "AI did not return a description"
                 }
                 book.metadataUpdatedAt = Instant.now()
                 books.save(book)
@@ -119,6 +120,7 @@ class BookMetadataEnrichmentService(
             log.error("BOOK_METADATA FAILED for book {}: {}", book.title, exception.message, exception)
 
             book.metadataStatus = BookMetadataStatus.FAILED
+            book.metadataError = exception.message ?: exception.javaClass.simpleName
             book.metadataUpdatedAt = Instant.now()
             books.save(book)
         }

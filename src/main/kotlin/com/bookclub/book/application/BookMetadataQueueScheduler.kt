@@ -34,13 +34,13 @@ class BookMetadataQueueScheduler(
         val retryableFailedBooks = books.findByMetadataStatusAndMetadataUpdatedAtBefore(
             BookMetadataStatus.FAILED,
             Instant.now().minus(Duration.ofSeconds(1))
-        )
+        ).filter { it.metadataAttempts < MAX_ATTEMPTS }
 
         val retryablePartialBooks = books
             .findByMetadataStatusAndDescriptionIsNullAndMetadataUpdatedAtBefore(
                 BookMetadataStatus.PARTIAL,
                 Instant.now().minus(Duration.ofSeconds(1))
-            )
+            ).filter { it.metadataAttempts < MAX_ATTEMPTS }
 
         val allStuckBooks = (stuckBooks + stuckWithoutTimestamp + retryableFailedBooks + retryablePartialBooks)
             .distinctBy { it.id }
@@ -51,7 +51,14 @@ class BookMetadataQueueScheduler(
                 it.id,
                 it.metadataStatus
             )
-            it.metadataStatus = BookMetadataStatus.NEW
+            if (it.metadataStatus == BookMetadataStatus.PROCESSING &&
+                it.metadataAttempts >= MAX_ATTEMPTS
+            ) {
+                it.metadataStatus = BookMetadataStatus.FAILED
+                it.metadataError = "Metadata processing timeout after $MAX_ATTEMPTS attempts"
+            } else {
+                it.metadataStatus = BookMetadataStatus.NEW
+            }
             it.metadataUpdatedAt = null
         }
 
@@ -71,6 +78,8 @@ class BookMetadataQueueScheduler(
         batch.forEach {
             it.metadataStatus = BookMetadataStatus.PROCESSING
             it.metadataUpdatedAt = processingTime
+            it.metadataAttempts += 1
+            it.metadataError = null
         }
 
         books.saveAll(batch)
@@ -78,5 +87,9 @@ class BookMetadataQueueScheduler(
         batch.forEach {
             asyncRunner.run(requireNotNull(it.id))
         }
+    }
+
+    companion object {
+        private const val MAX_ATTEMPTS = 3
     }
 }
