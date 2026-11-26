@@ -53,9 +53,6 @@ function App() {
       <BookListPreview
         books={books}
         validation={validation}
-        onUpdate={submission.updateBook}
-        onRemove={submission.removeBook}
-        onAdd={submission.addBook}
       />
 
       <button

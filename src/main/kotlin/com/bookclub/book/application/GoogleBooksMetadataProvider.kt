@@ -48,6 +48,7 @@ class GoogleBooksMetadataProvider(
             .fromUriString("https://www.googleapis.com/books/v1/volumes")
             .queryParam("q", query)
             .queryParam("maxResults", 10)
+            .queryParam("langRestrict", "ru")
 
         if (apiKey.isNotBlank()) {
             uriBuilder.queryParam("key", apiKey)

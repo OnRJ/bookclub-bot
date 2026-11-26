@@ -7,6 +7,7 @@ import org.springframework.web.client.RestClient
 import org.springframework.http.client.JdkClientHttpRequestFactory
 import java.net.http.HttpClient
 import java.time.Duration
+import org.slf4j.LoggerFactory
 
 @Component
 class OpenAiBookDescriptionGenerator(
@@ -16,6 +17,8 @@ class OpenAiBookDescriptionGenerator(
     @param:Value($$"${openai.model:}")
     private val model: String
 ) : BookDescriptionGenerator {
+
+    private val log = LoggerFactory.getLogger(javaClass)
 
     private val restClient = RestClient.builder()
         .requestFactory(
@@ -32,6 +35,7 @@ class OpenAiBookDescriptionGenerator(
     ): BookDescriptionGenerationResult {
 
         if (apiKey.isBlank()) {
+            log.warn("AI description generation skipped: OPENAI_API_KEY is not configured")
             return BookDescriptionGenerationResult(
                 description = null,
                 success = false,
@@ -170,6 +174,7 @@ class OpenAiBookDescriptionGenerator(
                 )
             }
         } catch (e: Exception) {
+            log.error("AI description generation failed for '{}'", request.title, e)
             BookDescriptionGenerationResult(
                 description = null,
                 success = false,

@@ -171,15 +171,13 @@ textarea::placeholder {
   text-align: center;
 }
 
-.book-item input {
+.book-title {
   flex: 1;
   min-width: 0;
   padding: 8px 0;
-  border: 0;
-  outline: none;
-  background: transparent;
   color: var(--app-text);
   font-size: 16px;
+  overflow-wrap: anywhere;
 }
 
 .book-status {

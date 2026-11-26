@@ -67,7 +67,7 @@ class BookMetadataEnrichmentService(
 
             val candidate = resolution.candidate
 
-            if (book.author.isNullOrBlank() && !candidate.author.isNullOrBlank()) {
+            if (shouldReplaceAuthor(book.author, candidate.author)) {
                 book.author = candidate.author
             }
 
@@ -101,8 +101,14 @@ class BookMetadataEnrichmentService(
                     book.descriptionSource = candidate.source
                     book.metadataStatus = BookMetadataStatus.READY
                 } else {
-                    book.descriptionSource = candidate.source
-                    book.metadataStatus = BookMetadataStatus.PARTIAL
+                    if (!candidate.description.isBlank()) {
+                        book.description = candidate.description
+                        book.descriptionSource = candidate.source
+                        book.metadataStatus = BookMetadataStatus.READY
+                    } else {
+                        book.descriptionSource = candidate.source
+                        book.metadataStatus = BookMetadataStatus.PARTIAL
+                    }
                 }
             } else {
                 book.descriptionSource = candidate.source
@@ -146,7 +152,7 @@ class BookMetadataEnrichmentService(
         book: com.bookclub.book.infrastructure.persistence.BookEntity,
         generated: BookDescriptionGenerationResult
     ) {
-        if (book.author.isNullOrBlank() && !generated.author.isNullOrBlank()) {
+        if (shouldReplaceAuthor(book.author, generated.author)) {
             book.author = generated.author
         }
         if (book.pageCount == null && generated.pageCount != null) {
@@ -161,7 +167,7 @@ class BookMetadataEnrichmentService(
                 .firstOrNull { it.pageCount != null || it.isbn != null }
                 ?: return
 
-            if (book.author.isNullOrBlank() && !candidate.author.isNullOrBlank()) {
+            if (shouldReplaceAuthor(book.author, candidate.author)) {
                 book.author = candidate.author
             }
             if (book.pageCount == null) book.pageCount = candidate.pageCount
@@ -170,4 +176,13 @@ class BookMetadataEnrichmentService(
             log.warn("Google Books fallback failed for '{}': {}", book.title, exception.message)
         }
     }
+
+    private fun shouldReplaceAuthor(current: String?, candidate: String?): Boolean {
+        if (candidate.isNullOrBlank()) return false
+        if (current.isNullOrBlank()) return true
+        return !containsCyrillic(current) && containsCyrillic(candidate)
+    }
+
+    private fun containsCyrillic(value: String): Boolean =
+        value.any { it in '\u0400'..'\u04FF' }
 }

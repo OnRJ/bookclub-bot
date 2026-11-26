@@ -48,10 +48,20 @@ class BookMetadataResolver(
 
         val eligible = ranked.filter { it.score >= MIN_SCORE }
 
-        val best = eligible.firstOrNull() ?: return null
+        // Prefer a confident match, but keep the first provider result as a
+        // fallback so that useful pages/ISBN/description data is not discarded.
+        val best = eligible.firstOrNull()
+            ?: candidates.firstOrNull()?.let {
+                BookMetadataResolution(it, calculateScore(title, author, it))
+            }
+            ?: return null
 
         val merged = aggregator.merge(
-            candidates = eligible.map { it.candidate },
+            candidates = if (eligible.isNotEmpty()) {
+                eligible.map { it.candidate }
+            } else {
+                candidates
+            },
             preferred = best.candidate
         )
 

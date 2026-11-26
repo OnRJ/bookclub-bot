@@ -11,18 +11,15 @@ describe("App", () => {
 
   afterEach(() => cleanup());
 
-  it("parses a list and allows editing and removing books", () => {
+  it("parses a list and shows books as read-only preview", () => {
     render(<App />);
     const textarea = screen.getByLabelText("Твой список");
     fireEvent.change(textarea, { target: { value: tenBooks.join("\n") } });
 
     expect(screen.getByText("10 / 10")).toBeInTheDocument();
-    const firstBook = screen.getByLabelText("Книга 1");
-    fireEvent.change(firstBook, { target: { value: "Updated book" } });
-    expect(firstBook).toHaveValue("Updated book");
-
-    fireEvent.click(screen.getByRole("button", { name: "Удалить книгу 10" }));
-    expect(screen.getByText("9 / 10")).toBeInTheDocument();
+    expect(screen.getByLabelText("Книга 1")).toHaveTextContent("Book 1");
+    expect(screen.queryByRole("button", { name: /Удалить книгу/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Добавить книгу/ })).not.toBeInTheDocument();
   });
 
   it("submits valid books and shows success", async () => {
