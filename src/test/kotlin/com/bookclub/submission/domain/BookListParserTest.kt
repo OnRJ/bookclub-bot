@@ -75,6 +75,27 @@ class BookListParserTest {
     }
 
     @Test
+    fun `should preserve four digit numeric title`() {
+        val input = """
+            1. Анна Каренина - Лев Толстой
+            2. Великий Гэтсби - Фрэнсис Скотт Фицджеральд
+            3. Граф Монте-Кристо - Александр Дюма
+            4. Война и мир - Лев Толстой
+            5. Франкенштейн - Мэри Шелли
+            6. Отверженные - Виктор Гюго
+            7. Маленькие женщины - Луиза Мэй Олкотт
+            8. Дон Кихот - Мигель де Сервантес
+            9. Алые паруса - Александр Грин
+            10. 1984 - Джордж Оруэлл
+        """.trimIndent()
+
+        val result = parser.parse(input)
+
+        assertEquals("1984", result.last().title)
+        assertEquals("Джордж Оруэлл", result.last().author)
+    }
+
+    @Test
     fun `should reject fewer than ten books`() {
         val input = (1..9).joinToString("\n") {
             "Book $it"

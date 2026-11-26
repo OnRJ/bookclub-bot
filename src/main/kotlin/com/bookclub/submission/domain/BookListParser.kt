@@ -9,7 +9,8 @@ class BookListParser {
         override fun toString(): String = author?.let { "$title — $it" } ?: title
     }
 
-    private val numberedPrefix = Regex("""^\s*\d+\s*[.)-]\s*""")
+    // Avoid treating numeric titles such as "1984 - Orwell" as list markers.
+    private val numberedPrefix = Regex("""^\s*\d{1,2}\s*[.)-]\s*""")
 
     fun parse(input: String): List<ParsedBook> {
         require(input.isNotBlank()) {
