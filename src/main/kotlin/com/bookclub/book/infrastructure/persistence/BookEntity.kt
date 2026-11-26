@@ -58,6 +58,9 @@ class BookEntity(
     @Column(name = "metadata_error", columnDefinition = "text")
     var metadataError: String? = null,
 
+    @Column(name = "metadata_stage", length = 40)
+    var metadataStage: String? = null,
+
     @JdbcTypeCode(SqlTypes.TIMESTAMP_WITH_TIMEZONE)
     @Column(
         name = "created_at",

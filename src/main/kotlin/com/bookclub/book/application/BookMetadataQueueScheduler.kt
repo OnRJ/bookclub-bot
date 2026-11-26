@@ -55,7 +55,7 @@ class BookMetadataQueueScheduler(
                 it.metadataAttempts >= MAX_ATTEMPTS
             ) {
                 it.metadataStatus = BookMetadataStatus.FAILED
-                it.metadataError = "Metadata processing timeout after $MAX_ATTEMPTS attempts"
+                it.metadataError = "${it.metadataStage ?: "UNKNOWN_STAGE"}: metadata processing timeout after $MAX_ATTEMPTS attempts"
             } else {
                 it.metadataStatus = BookMetadataStatus.NEW
             }
@@ -80,6 +80,7 @@ class BookMetadataQueueScheduler(
             it.metadataUpdatedAt = processingTime
             it.metadataAttempts += 1
             it.metadataError = null
+            it.metadataStage = "QUEUED"
         }
 
         books.saveAll(batch)

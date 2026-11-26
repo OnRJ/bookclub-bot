@@ -17,6 +17,7 @@ class BookMetadataEnrichmentService(
 
     fun enrich(bookId: Long) {
         val book = books.findById(bookId).orElse(null) ?: return
+        var stage = "LOAD_BOOK"
 
         if (book.metadataStatus != BookMetadataStatus.NEW &&
             book.metadataStatus != BookMetadataStatus.PROCESSING
@@ -25,12 +26,16 @@ class BookMetadataEnrichmentService(
         }
 
         try {
+            stage = "GOOGLE_SEARCH"
+            book.metadataStage = stage
             book.metadataStatus = BookMetadataStatus.PROCESSING
             books.save(book)
 
             val resolution = metadataResolver.resolve(book.title, book.author)
 
             if (resolution == null) {
+                stage = "AI_GENERATION"
+                book.metadataStage = stage
                 val generated = descriptionGenerator.generate(
                     BookDescriptionRequest(
                         title = book.title,
@@ -42,6 +47,8 @@ class BookMetadataEnrichmentService(
                     )
                 )
                 applyAiMetadata(book, generated)
+                stage = "GOOGLE_RETRY"
+                book.metadataStage = stage
                 retryGoogleMetadata(book)
                 if (generated.success && !generated.description.isNullOrBlank()) {
                     book.description = generated.description
@@ -51,6 +58,8 @@ class BookMetadataEnrichmentService(
                     book.metadataStatus = BookMetadataStatus.FAILED
                     book.metadataError = generated.reason ?: "AI did not return a description"
                 }
+                stage = "SAVE_RESULT"
+                book.metadataStage = stage
                 book.metadataUpdatedAt = Instant.now()
                 books.save(book)
                 return
@@ -73,6 +82,8 @@ class BookMetadataEnrichmentService(
             if (!book.description.isNullOrBlank()) {
                 book.metadataStatus = BookMetadataStatus.READY
             } else if (!candidate.description.isNullOrBlank()) {
+                stage = "AI_GENERATION"
+                book.metadataStage = stage
                 val generated = descriptionGenerator.generate(
                     BookDescriptionRequest(
                         title = candidate.title,
@@ -95,6 +106,8 @@ class BookMetadataEnrichmentService(
                 }
             } else {
                 book.descriptionSource = candidate.source
+                stage = "AI_GENERATION"
+                book.metadataStage = stage
                 val generated = descriptionGenerator.generate(
                     BookDescriptionRequest(
                         title = candidate.title,
@@ -113,14 +126,17 @@ class BookMetadataEnrichmentService(
                 book.metadataStatus = BookMetadataStatus.PARTIAL
             }
 
+            stage = "SAVE_RESULT"
+            book.metadataStage = stage
             book.metadataUpdatedAt = Instant.now()
             books.save(book)
 
         } catch (exception: Exception) {
-            log.error("BOOK_METADATA FAILED for book {}: {}", book.title, exception.message, exception)
+            book.metadataStage = stage
+            log.error("BOOK_METADATA FAILED at {} for book {}: {}", stage, book.title, exception.message, exception)
 
             book.metadataStatus = BookMetadataStatus.FAILED
-            book.metadataError = exception.message ?: exception.javaClass.simpleName
+            book.metadataError = "$stage: ${exception.message ?: exception.javaClass.simpleName}"
             book.metadataUpdatedAt = Instant.now()
             books.save(book)
         }
