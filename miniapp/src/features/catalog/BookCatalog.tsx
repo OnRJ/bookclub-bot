@@ -14,19 +14,23 @@ function BookCard({ book }: { book: CatalogBook }) {
         <div className="catalog-book-info">
           <h2>{book.title}</h2>
 
-          {book.author && (
-            <p className="catalog-author">{book.author}</p>
-          )}
+          <p className="catalog-author">
+            {book.author || "Автор не указан"}
+          </p>
 
-          {book.pageCount && (
+          {book.pageCount ? (
             <span className="catalog-pages">
               📖 {book.pageCount} стр.
+            </span>
+          ) : (
+            <span className="catalog-pages catalog-pages-muted">
+              📖 Количество страниц не указано
             </span>
           )}
         </div>
       </div>
 
-      {book.description && (
+      {book.description ? (
         <>
           <button
             className="catalog-expand"
@@ -41,6 +45,10 @@ function BookCard({ book }: { book: CatalogBook }) {
             </p>
           )}
         </>
+      ) : (
+        <p className="catalog-description catalog-description-muted">
+          Описание пока недоступно.
+        </p>
       )}
     </article>
   );
@@ -48,7 +56,6 @@ function BookCard({ book }: { book: CatalogBook }) {
 
 export function BookCatalog({ pollRoundId }: Props) {
   const [books, setBooks] = useState<CatalogBook[]>([]);
-  const [roundNumber, setRoundNumber] = useState<number>(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -56,7 +63,6 @@ export function BookCatalog({ pollRoundId }: Props) {
     fetchBookCatalog(pollRoundId)
       .then((data) => {
         setBooks(data.books);
-        setRoundNumber(data.roundNumber);
       })
       .catch((err: Error) => {
         setError(err.message);
@@ -80,10 +86,6 @@ export function BookCatalog({ pollRoundId }: Props) {
           Знакомься с книгами, которые участвуют в голосовании.
         </p>
       </section>
-
-      <div className="catalog-round">
-        Раунд {roundNumber}
-      </div>
 
       {loading && (
         <div className="catalog-state">

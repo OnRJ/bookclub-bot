@@ -34,7 +34,13 @@ class BookMetadataQueueScheduler(
             Instant.now().minus(Duration.ofSeconds(5))
         )
 
-        val allStuckBooks = (stuckBooks + stuckWithoutTimestamp + retryableFailedBooks)
+        val retryablePartialBooks = books
+            .findByMetadataStatusAndDescriptionIsNullAndMetadataUpdatedAtBefore(
+                BookMetadataStatus.PARTIAL,
+                Instant.now().minus(Duration.ofSeconds(5))
+            )
+
+        val allStuckBooks = (stuckBooks + stuckWithoutTimestamp + retryableFailedBooks + retryablePartialBooks)
             .distinctBy { it.id }
 
         allStuckBooks.forEach {

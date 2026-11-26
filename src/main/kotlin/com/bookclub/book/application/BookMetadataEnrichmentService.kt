@@ -94,6 +94,21 @@ class BookMetadataEnrichmentService(
                 }
             } else {
                 book.descriptionSource = candidate.source
+                val generated = descriptionGenerator.generate(
+                    BookDescriptionRequest(
+                        title = candidate.title,
+                        author = book.author,
+                        sourceDescription = candidate.description,
+                        pageCount = book.pageCount,
+                        isbn = book.isbn,
+                        metadataSource = "AI_FALLBACK"
+                    )
+                )
+                applyAiMetadata(book, generated)
+                if (generated.success && !generated.description.isNullOrBlank()) {
+                    book.description = generated.description
+                    book.descriptionSource = "AI_FALLBACK"
+                }
                 book.metadataStatus = BookMetadataStatus.PARTIAL
             }
 

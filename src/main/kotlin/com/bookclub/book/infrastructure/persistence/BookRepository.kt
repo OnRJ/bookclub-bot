@@ -8,15 +8,16 @@ interface BookRepository : JpaRepository<BookEntity, Long> {
     fun findFirstByTitleIgnoreCase(title: String): BookEntity?
 
     fun findByMetadataStatus(
-        status: BookMetadataStatus
-    ): List<BookEntity>
-
-    fun findByMetadataStatus(
         status: BookMetadataStatus,
         pageable: Pageable
     ): List<BookEntity>
 
     fun findByMetadataStatusAndMetadataUpdatedAtBefore(
+        status: BookMetadataStatus,
+        cutoff: Instant
+    ): List<BookEntity>
+
+    fun findByMetadataStatusAndDescriptionIsNullAndMetadataUpdatedAtBefore(
         status: BookMetadataStatus,
         cutoff: Instant
     ): List<BookEntity>
