@@ -1,7 +1,11 @@
 
 package com.bookclub.submission.infrastructure.persistence
 
+import com.bookclub.book.application.BookDescriptionGenerator
+import com.bookclub.book.application.BookDescriptionRequest
+import com.bookclub.book.application.BookMetadataResolver
 import com.bookclub.book.infrastructure.persistence.BookEntity
+import com.bookclub.book.infrastructure.persistence.BookMetadataStatus
 import com.bookclub.book.infrastructure.persistence.BookRepository
 import com.bookclub.club.infrastructure.persistence.ClubMemberEntity
 import com.bookclub.club.infrastructure.persistence.ClubMemberRepository
@@ -12,6 +16,7 @@ import com.bookclub.user.infrastructure.persistence.UserRepository
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 import java.time.YearMonth
+import java.time.Instant
 
 @Component
 class JpaSubmissionAdapter(
@@ -20,7 +25,9 @@ class JpaSubmissionAdapter(
     private val books: BookRepository,
     private val submissions: SubmissionRepository,
     private val submissionBooks: SubmissionBookRepository,
-    private val clubMembers: ClubMemberRepository
+    private val clubMembers: ClubMemberRepository,
+    private val metadataResolver: BookMetadataResolver,
+    private val descriptionGenerator: BookDescriptionGenerator
 ) : SubmissionWriter {
 
     @Transactional
@@ -85,7 +92,7 @@ class JpaSubmissionAdapter(
         )
 
         val savedBooks = bookTitles.map { title ->
-            books.save(BookEntity(title = title))
+            enrichOrReuseBook(title)
         }
 
         submissionBooks.saveAll(
@@ -104,5 +111,87 @@ class JpaSubmissionAdapter(
             telegramUserId,
             bookTitles
         )
+    }
+
+    private fun enrichOrReuseBook(title: String): BookEntity {
+        val existing = books.findFirstByTitleIgnoreCase(title)
+
+        if (existing != null &&
+            existing.metadataStatus == BookMetadataStatus.READY &&
+            !existing.description.isNullOrBlank()
+        ) {
+            return existing
+        }
+
+        val resolution = try {
+            metadataResolver.resolve(title)
+        } catch (_: Exception) {
+            null
+        }
+
+        if (resolution == null) {
+            return existing ?: books.save(
+                BookEntity(
+                    title = title,
+                    metadataStatus = BookMetadataStatus.FAILED
+                )
+            )
+        }
+
+        val candidate = resolution.candidate
+
+        val book = existing ?: BookEntity(title = title)
+
+        if (book.author.isNullOrBlank() && !candidate.author.isNullOrBlank()) {
+            book.author = candidate.author
+        }
+
+        if (book.pageCount == null && candidate.pageCount != null) {
+            book.pageCount = candidate.pageCount
+        }
+
+        if (book.coverUrl.isNullOrBlank() && !candidate.coverUrl.isNullOrBlank()) {
+            book.coverUrl = candidate.coverUrl
+        }
+
+        if (book.isbn.isNullOrBlank() && !candidate.isbn.isNullOrBlank()) {
+            book.isbn = candidate.isbn
+        }
+
+        if (book.description.isNullOrBlank() &&
+            !candidate.description.isNullOrBlank()
+        ) {
+            val generated = try {
+                descriptionGenerator.generate(
+                    BookDescriptionRequest(
+                        title = candidate.title,
+                        author = candidate.author,
+                        sourceDescription = candidate.description,
+                        pageCount = candidate.pageCount,
+                        isbn = candidate.isbn,
+                        metadataSource = candidate.source
+                    )
+                )
+            } catch (_: Exception) {
+                null
+            }
+
+            if (generated?.success == true &&
+                !generated.description.isNullOrBlank()
+            ) {
+                book.description = generated.description
+                book.descriptionSource = candidate.source
+                book.metadataStatus = BookMetadataStatus.READY
+            } else {
+                book.descriptionSource = candidate.source
+                book.metadataStatus = BookMetadataStatus.PARTIAL
+            }
+        } else if (book.description.isNullOrBlank()) {
+            book.metadataStatus = BookMetadataStatus.PARTIAL
+        }
+
+        book.metadataUpdatedAt = Instant.now()
+
+        return books.save(book)
     }
 }

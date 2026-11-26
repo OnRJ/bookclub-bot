@@ -13,6 +13,8 @@ services:
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost}
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
       GOOGLE_BOOKS_API_KEY: ${GOOGLE_BOOKS_API_KEY}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-5-nano}
     networks:
       - bookclub-network
 
