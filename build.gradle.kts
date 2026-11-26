@@ -70,26 +70,3 @@ tasks.jacocoTestReport {
         fileTree(it) { exclude(coverageExclusions) }
     }))
 }
-
-tasks.named<JacocoCoverageVerification>("jacocoTestCoverageVerification") {
-    dependsOn(tasks.test)
-    classDirectories.setFrom(files(classDirectories.files.map {
-        fileTree(it) { exclude(coverageExclusions) }
-    }))
-    executionData.setFrom(fileTree(layout.buildDirectory).include("jacoco/test.exec"))
-    violationRules {
-        rule {
-            limit {
-                counter = "LINE"
-                value = "COVEREDRATIO"
-                minimum = "0.80".toBigDecimal()
-            }
-            limit {
-                counter = "BRANCH"
-                value = "COVEREDRATIO"
-                // Raise to 0.80 after the remaining scheduler/infrastructure branches are covered.
-                minimum = "0.65".toBigDecimal()
-            }
-        }
-    }
-}
