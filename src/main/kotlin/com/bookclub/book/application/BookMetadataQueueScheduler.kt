@@ -31,7 +31,7 @@ class BookMetadataQueueScheduler(
 
         val retryableFailedBooks = books.findByMetadataStatusAndMetadataUpdatedAtBefore(
             BookMetadataStatus.FAILED,
-            Instant.now().minus(Duration.ofMinutes(10))
+            Instant.now().minus(Duration.ofSeconds(5))
         )
 
         val allStuckBooks = (stuckBooks + stuckWithoutTimestamp + retryableFailedBooks)

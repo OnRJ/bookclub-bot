@@ -25,14 +25,11 @@ class BookCatalogPublicationScheduler(
             val options = pollOptions.findAllByPollRoundIdOrderByOptionIndex(roundId)
             if (options.size != 10) return@forEach
 
-            val ready = options.all { option ->
-                val book = option.book
-                book.metadataStatus != BookMetadataStatus.NEW &&
-                    book.metadataStatus != BookMetadataStatus.PROCESSING &&
-                    book.metadataStatus != BookMetadataStatus.FAILED &&
-                    !book.description.isNullOrBlank()
+            val processing = options.any { option ->
+                option.book.metadataStatus == BookMetadataStatus.NEW ||
+                    option.book.metadataStatus == BookMetadataStatus.PROCESSING
             }
-            if (!ready) return@forEach
+            if (processing) return@forEach
 
             try {
                 val published = publisher.publishCatalogButtonSafely(
